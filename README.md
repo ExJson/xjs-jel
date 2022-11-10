@@ -759,7 +759,7 @@ Meta generators have the same fields.
 array >> meta [1, 2, 3]: {
 
   // Perform side effects and validations.
-  >> if ($v % 2 == 0) log: Even number: $v
+  >> if $($v % 2 == 0) log: Even number: $v
   
   // The final value of this field is
   // the next element.
@@ -776,11 +776,197 @@ Meta imports allow parsing unrecognized extensions:
 }
 ```
 
+## Class Prototyping
 
+JEL provides specifications for defining class templates.
 
+The class template is an outline of which fields are required
+for an object, their data type, as well as any default values
+and methods.
 
+For example, to define a template with required fields:
 
+```
+Fruit >> class: {
+  type: string
+  color: string
+}
+```
 
+To flag any field as optional, place a `?` token immediately
+after the key.
 
+```
+Fruit >> class: {
+  type: string
+  color?: string
+}
+```
 
+To provide default flags for these fields, simply attach them
+to the type definition:
 
+```
+Fruit >> class: {
+  type: string
+  color >> private: string
+}
+```
+
+To provide a default value, use the extended field descriptor
+syntax.
+
+```
+Fruit >> class: {
+  type: string
+  color: {
+    type: string
+    default: yellow
+  }
+}
+```
+
+The type definition can be any of the following options:
+
+* A regular expression, e.g. `\\w{3}_\\w{3}`
+* Another type, starting with `@`
+* `string`
+* `number`
+* `boolean`
+* `array`
+* `object`
+* `any`
+
+To use this definition, pass a value into it using it a
+**delegate expression**. 
+
+```
+fruit >> @Fruit: {
+  type: banana
+  color: yellow
+}
+```
+
+Finally, class definitions also support nested template
+expressions. These can be defined as follows:
+
+```
+Fruit >> class: {
+  type: string
+  color?: string
+  
+  print_color >> (): {
+    >> log if: {
+      $color: My color is $color!
+      _: I don't have a color.
+    }
+  }
+}
+
+fruit >> @Fruit: {
+  type: banana
+}
+
+>>: fruit.print_color()
+```
+
+To require that a template be overridden, simply leave
+the field `null`. 
+
+```
+Fruit >> class: {
+  print_color >> (): null
+}
+```
+
+The implementor is not required to specify any field 
+flags or expressions, but is encouraged to do so for 
+readability.
+
+```
+fruit >> @Fruit: {
+  print_color: {
+    >> log: I am red!
+  }
+}
+```
+
+## Delegate Expressions
+
+In JEL, A delegate expression is an expression is any
+expression that transforms the RHS value by passing it
+into a template or class.
+
+This can be used to declare types--as in the previous
+example--or to pass the RHS value through a template
+before evalutating it.
+
+For example, imagine that a program has the following
+field with example data:
+
+```
+height: [ 0, 64 ]
+```
+
+The user may wish to define an expression which transforms
+this field into a different syntax:
+
+```
+WORLD_HEIGHT >> var: 128
+
+offset >> (array): [ 
+  $array[0], 
+  $WORLD_HEIGHT - $array[1] 
+]
+
+// 0 to 100 if WORLD_HEIGHT == 128
+height >> @offset: [ 0, 28 ] 
+```
+
+For an advanced example, add some validations to guarantee
+that the second parameter cannot be negative.
+
+```
+WORLD_HEIGHT >> var: 128
+
+offset >> meta (array): {
+  validations: {
+    $WORLD_HEIGHT - $array[1] > 0:
+      $array[1] is too high!
+  }
+  return: [ 
+    $array[0], 
+    $WORLD_HEIGHT - $array[1] 
+  ]
+}
+```
+
+## Higher Order Templates
+
+The templating system in JEL tolerates repeated template
+declarations within a key. 
+
+For example,
+
+```
+sum >> (a) (b): $a + $b
+add2 >> (a): $sum($a)(2)
+
+four: $sum(2)(2)
+five: $add2(3)
+```
+
+In many cases, this will be easier to express when the
+parent function takes the form of a meta template.
+
+```
+circle >> meta (radius): {
+  circumference: 2 * 3.14 * $radius
+  return >> (color): {
+    circumference: $circumference
+    color: $color
+  }
+}
+
+red circle: $circle(1.5)(red)
+```
