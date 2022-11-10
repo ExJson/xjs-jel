@@ -277,7 +277,7 @@ them from being re-exported:
 ## Conditional Expressions and Statements
 
 JEL supports conditional expressions and statements via the
-`?` operator. 
+`if` operator. 
 
 For example, to conditionally execute a statement with side
 effects:
@@ -285,10 +285,8 @@ effects:
 ```
 config >> import var: config.xjs
 
->> ?: {
-  $config.height > 100: {
-    >> log: Using an extremely tall structure!
-  }
+>> if ($config.height > 100): {
+  >> log: Using an extremely tall structure!
 }
 ```
 
@@ -297,22 +295,62 @@ Or, to use a compressed syntax by combining flags:
 ```
 config >> import var: config.xjs
 
->> ?: {
-  $config.height > 100 >> log:
-    Using an extremely tall structure!
-}
+>> if ($config.height > 100) log: 
+  Using an extremely tall structure!
 ```
 
-To conditionally express the `size` of an object when given 
-its `height`:
+For a more advanced conditional tree, place the `if` token
+at the end of the key. The value of this expression is an
+object where each key is the condition.
 
 ```
 height: 150
 
-size >> ?: {
+size >> if: {
   $height < 50: small
   $height < 100: large
   _: giant
+}
+```
+
+Finally, to compare values by equality, use a `match` expression:
+
+```
+fruit: banana
+
+preference >> match $fruit: {
+  apple: My favorite
+  banana: Second favorite
+  orange: Third favorite
+  _: Not interested
+}
+```
+
+`match` expressions can be combined with single conditions as guards:
+
+```
+fruit: banana
+
+preference >> match $fruit: {
+  apple >> if ($rand() < 0.50):
+    Apple and lucky!
+  _:
+    Not an apple or not lucky.
+}
+```
+
+`match` statements can be used to check objects for specific fields
+and arrays for any number of elements.
+
+```
+fruit: {
+  type: banana
+  color: yellow
+}
+
+preference >> match $fruit: {
+  {type: banana}: I like it!
+  _: I don't like it or type mismatch
 }
 ```
 
@@ -346,10 +384,8 @@ Or, combine operators to get the highest number:
 ```
 max: null
 
->> [1, 2, 3] ?: {
-  $v > $max: {
-    max >> set: $v
-  }
+>> [1, 2, 3] if ($v > $max): {
+  max >> set: $v
 }
 ```
 
@@ -369,9 +405,7 @@ cubes >> [$input..]: $v ^ 3
 Combine operators to filter values:
 
 ```
-odds >> [1, 2, 3] ?: {
-  $v % 2 != 0: $v
-}
+odds >> [1, 2, 3] if ($v %2 != 0): $v
 ``` 
 
 ### Object Generators
@@ -409,10 +443,9 @@ numbers: {$input..}: {
 Combine operators to filter keys and values:
 
 ```
-odds >> {one: 1, two: 2, three: 3} ?: {
-  $v % 2 != 0: {
-    number_$k >> def: $v
-  }
+odds >> {one: 1, two: 2, three: 3} 
+        if ($v % 2 != 0): {
+  number_$k >> def: $v
 }
 ```
 
@@ -711,7 +744,7 @@ type >> meta (input): {
   
   // The final value of this field is 
   // returned by the template.
-  return >> ?: {
+  return >> if: {
     $input.isArray() || $input.isObject():
       container
     _:
@@ -726,10 +759,7 @@ Meta generators have the same fields.
 array >> meta [1, 2, 3]: {
 
   // Perform side effects and validations.
-  >> ? log: {
-    $v % 2 == 0:
-      Even number: $v
-  }
+  >> if ($v % 2 == 0) log: Even number: $v
   
   // The final value of this field is
   // the next element.
