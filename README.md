@@ -847,6 +847,20 @@ fruit >> @Fruit: {
 }
 ```
 
+If every field in the class definition is a regular
+field, the processor will generate a second template
+which may be used as a constructor.
+
+```
+Fruit >> class: {
+  type: string
+  color?: string
+}
+
+banana: $Fruit(banana, yellow)
+banana2: $Fruit(banana)
+```
+
 Finally, class definitions also support nested template
 expressions. These can be defined as follows:
 
@@ -889,6 +903,23 @@ fruit >> @Fruit: {
     >> log: I am red!
   }
 }
+```
+
+###
+
+JEL also provides specifications for a second kind of type
+type delcaration: the `enum` type. This is essentially a
+list of possible values and or patterns for a given field.
+
+For example,
+
+```
+color >> enum: [
+  red
+  green
+  blue
+  '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+]
 ```
 
 ## Delegate Expressions
