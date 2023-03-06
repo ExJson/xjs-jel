@@ -37,22 +37,43 @@ public final class JelFlags {
     public static final int IMPORT = 1 << 4;
 
     /**
+     * This value is a template expression.
+     */
+    public static final int TEMPLATE = 1 << 5;
+
+    /**
+     * This is an expanded class prototype expression.
+     */
+    public static final int CLASS = 1 << 6;
+
+    /**
+     * This field defines a list of possible values.
+     */
+    public static final int ENUM = 1 << 7;
+
+    /**
      * This value may contain expression-like data, but should be
      * evaluated.
      */
-    public static final int NOINLINE = 1 << 5;
+    public static final int NOINLINE = 1 << 6;
 
     /**
      * In addition to containing a regular RHS expression, this field
      * contains a config-like "meta" descriptor of the expression.
      */
-    public static final int META = 1 << 6;
+    public static final int META = 1 << 7;
 
     /**
      * Indicates that a field is only used as part of a destructuring
      * expression to create other values.
      */
-    public static final int FROM = 1 << 7;
+    public static final int FROM = 1 << 8;
+
+    /**
+     * Indicates that a field was generated as the result of some
+     * non-literal expression.
+     */
+    public static final int GENERATED = 1 << 30;
 
     /**
      * This field does not have flags and is a valid candidate to be
