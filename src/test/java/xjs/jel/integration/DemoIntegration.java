@@ -91,7 +91,7 @@ public final class DemoIntegration extends AbstractIntegrationTest {
             """);
     }
 
-    @Test`
+    @Test
     public void nestedMatch_isStillEvaluated() throws JelException {
         this.parse("""
             
