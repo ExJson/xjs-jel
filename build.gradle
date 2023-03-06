@@ -8,6 +8,9 @@ apply plugin: 'java'
 repositories {
     mavenLocal()
     mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/Exjson/xjs-core")
+    }
 }
 
 dependencies {
