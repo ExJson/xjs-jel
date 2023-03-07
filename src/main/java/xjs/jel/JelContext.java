@@ -11,6 +11,7 @@ import xjs.jel.expression.Expression;
 import xjs.jel.scope.Scope;
 import xjs.jel.sequence.Sequence;
 import xjs.jel.serialization.sequence.Sequencer;
+import xjs.serialization.JsonContext;
 import xjs.serialization.token.TokenStream;
 import xjs.serialization.token.TokenType;
 import xjs.serialization.token.Tokenizer;
@@ -19,12 +20,11 @@ import xjs.serialization.util.PositionTrackingReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -35,39 +35,46 @@ public class JelContext {
     private static final JsonValue ERRED_VALUE =
         JsonLiteral.jsonNull();
 
-    public final Map<File, Scope> globalScope;
     private final Map<String, JsonValue> fileMap;
     private final Map<String, JelException> errorMap;
-    private final Deque<Scope> scopeQueue;
-    private final Deque<JsonContainer> parentQueue;
+    private final Stack<Scope> scopeStack;
+    private final Stack<JsonContainer> parentStack;
     private final Set<String> inProgress;
+    private final Stack<File> filesInProgress;
     private final File root;
+    private final boolean isGlobal;
     private Sequencer sequencer;
     private @Nullable Logger log;
     private @Nullable JsonContainer parent;
-    private @Nullable File current;
     private boolean outputPrefix;
     private boolean strictPathing;
     private Scope scope;
     private int privilege;
+    private int folderDepth;
 
     public JelContext(final File root) {
         this(root, null);
     }
 
     public JelContext(final File root, final @Nullable Logger log) {
-        this.globalScope = new HashMap<>();
         this.fileMap = new HashMap<>();
         this.errorMap = new HashMap<>();
-        this.scopeQueue = new ArrayDeque<>();
-        this.parentQueue = new ArrayDeque<>();
+        this.scopeStack = new Stack<>();
+        this.parentStack = new Stack<>();
         this.inProgress = new HashSet<>();
+        this.filesInProgress = new Stack<>();
         this.root = root;
+        this.isGlobal = this == GLOBAL_CONTEXT || isGlobal(root);
         this.sequencer = Sequencer.JEL;
         this.log = log;
         this.outputPrefix = true;
         this.scope = new Scope();
         this.privilege = Privilege.BASIC;
+        this.folderDepth = 8;
+    }
+
+    private static boolean isGlobal(final File root) {
+        return root.getAbsolutePath().equals(new File("/").getAbsolutePath());
     }
 
     public void setLog(final @Nullable Logger log) {
@@ -104,17 +111,42 @@ public class JelContext {
         this.sequencer = sequencer;
     }
 
+    public void setFolderDepth(final int folderDepth) {
+        this.folderDepth = folderDepth;
+    }
+
     public void loadAll() {
-        throw new UnsupportedOperationException("todo");
+        if (this.isGlobal) {
+            this.loadRecursive(this.folderDepth, this.root);
+        } else {
+            this.loadRecursive(1, this.root);
+        }
+    }
+
+    private void loadRecursive(final int depth, final File dir) {
+        if (depth > this.folderDepth) {
+            return;
+        }
+        final File[] files = dir.listFiles();
+        if (files == null || files.length == 0) {
+            return;
+        }
+        for (final File f : files) {
+            if (f.isDirectory()) {
+                this.loadRecursive(depth + 1, f);
+            } else {
+                this.getOrLoadFile(f);
+            }
+        }
     }
 
     public void pushCapture(final Scope capture) {
-        this.scopeQueue.add(this.scope);
+        this.scopeStack.add(this.scope);
         this.scope = capture;
     }
 
     public void dropCapture() {
-        this.scope = this.scopeQueue.remove();
+        this.scope = this.scopeStack.pop();
     }
 
     public Scope getScope() {
@@ -123,16 +155,16 @@ public class JelContext {
 
     public void pushParent(final JsonContainer parent) {
         if (this.parent != null) {
-            this.parentQueue.add(this.parent);
+            this.parentStack.add(this.parent);
         }
         this.parent = parent;
     }
 
     public void dropParent() {
-        if (this.parentQueue.isEmpty()) {
+        if (this.parentStack.isEmpty()) {
             this.parent = null;
         } else {
-            this.parent = this.parentQueue.remove();
+            this.parent = this.parentStack.pop();
         }
     }
 
@@ -153,10 +185,10 @@ public class JelContext {
     public JsonContainer getRoot() {
         if (this.parent == null) {
             throw new IllegalStateException("no parents in context");
-        } else if (this.parentQueue.isEmpty()) {
+        } else if (this.parentStack.isEmpty()) {
             return this.parent;
         }
-        return this.parentQueue.getLast();
+        return this.parentStack.firstElement();
     }
 
     public JsonValue eval(final Sequence<?> sequence) throws JelException {
@@ -172,15 +204,50 @@ public class JelContext {
     }
 
     public JsonValue getImport(final String path) throws JelException {
-        final File file = new File(this.root, path);
+        final File file = this.resolveFile(path);
+        if (file == null) {
+            throw new JelException("File not found: " + path);
+        }
         final JsonValue out = this.getOrLoadFile(file);
         if (out == null) {
-            throw new JelException("File not found: " + path);
+            throw new IllegalStateException("out");
         } else if (out == ERRED_VALUE) {
             final JelException e = this.errorMap.get(file.getAbsolutePath());
             throw new JelException("Dependency not loaded: " + path, e);
         }
         return out;
+    }
+
+    private @Nullable File resolveFile(final String path) {
+        if (!this.filesInProgress.isEmpty()) {
+            final File loading = this.filesInProgress.peek();
+            File relative = new File(loading.getParent(), path);
+            if (relative.exists() && relative.isFile()) {
+                return relative;
+            }
+            relative = this.fileInRoot(path);
+            if (relative != null) {
+                return relative;
+            }
+            final String rootPath = this.root.getAbsolutePath();
+            File parent = loading.getParentFile();
+            while (rootPath.length() < parent.getAbsolutePath().length()) {
+                relative = new File(loading.getParent(), path);
+                if (relative.exists() && relative.isFile()) {
+                    return relative;
+                }
+                parent = parent.getParentFile();
+            }
+        }
+        return this.fileInRoot(path);
+    }
+
+    private @Nullable File fileInRoot(final String path) {
+        final File relative = new File(this.root, path);
+        if (relative.exists() && relative.isFile()) {
+            return relative;
+        }
+        return null;
     }
 
     public @Nullable JsonValue getOutput(final File file) {
@@ -204,9 +271,14 @@ public class JelContext {
 
     public JsonValue loadFile(final File file) {
         final String path = file.getAbsolutePath();
+        // for now, jel is only parsed in xjs files.
+        if (!file.getName().endsWith(".xjs")) {
+            return this.parseNonXjs(file, path);
+        }
         if (!this.inProgress.add(path)) {
             throw new IllegalStateException("Unhandled cyclical reference: " + file);
         }
+        this.filesInProgress.push(file);
         PositionTrackingReader reader = null;
         try (final FileInputStream fis = new FileInputStream(file)) {
             reader = PositionTrackingReader.fromIs(fis, true);
@@ -228,6 +300,17 @@ public class JelContext {
             this.errorMap.put(path, e);
         }
         this.inProgress.remove(path);
+        return ERRED_VALUE;
+    }
+
+    private JsonValue parseNonXjs(final File f, final String path) {
+        try {
+            return JsonContext.autoParse(f);
+        } catch (final IOException e) {
+            this.errorMap.put(path, new JelException("Cannot read file", e));
+        } catch (final SyntaxException e) {
+            this.errorMap.put(path, new JelException("File contains syntax errors", e));
+        }
         return ERRED_VALUE;
     }
 
@@ -268,14 +351,16 @@ public class JelContext {
     }
 
     protected String getFilename() {
-        return this.current != null ? this.current.getName() : "evaluator";
+        if (this.filesInProgress.isEmpty()) {
+            return "evaluator";
+        }
+        return this.filesInProgress.peek().getName();
     }
 
     public void dispose() {
-        this.globalScope.clear();
         this.fileMap.clear();
         this.errorMap.clear();
-        this.scopeQueue.clear();
+        this.scopeStack.clear();
         this.scope.dispose();
     }
 }
