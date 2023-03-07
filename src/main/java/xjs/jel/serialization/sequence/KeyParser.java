@@ -1,6 +1,7 @@
 package xjs.jel.serialization.sequence;
 
 import org.jetbrains.annotations.Nullable;
+import xjs.core.StringType;
 import xjs.jel.Alias;
 import xjs.jel.JelMember;
 import xjs.jel.destructuring.DestructurePattern;
@@ -13,9 +14,13 @@ import xjs.jel.expression.ReferenceExpression;
 import xjs.jel.modifier.Modifier;
 import xjs.jel.sequence.AliasType;
 import xjs.jel.sequence.JelType;
+import xjs.jel.serialization.token.Retokenizer;
 import xjs.serialization.Span;
 import xjs.serialization.token.ContainerToken;
+import xjs.serialization.token.StringToken;
 import xjs.serialization.token.Token;
+import xjs.serialization.token.TokenType;
+import xjs.serialization.util.StringContext;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,11 +39,12 @@ public class KeyParser extends ParserModule {
 
     public void parse(
             final JelMember.Builder builder,
-            final ContainerToken.Itr itr,
+            ContainerToken.Itr itr,
             final @Nullable AliasType forcedAlias) throws JelException {
         this.whitespaceCollector().append(builder, itr);
 
-        final int keyIdx = this.endOfKey(itr);
+        // todo: configurable string inspection
+        int keyIdx = this.endOfKey(itr);
         final int aliasIdx = this.endOfAlias(itr, keyIdx);
         final List<Modifier> modifiers =
             this.readModifiers(builder, itr, keyIdx, aliasIdx);

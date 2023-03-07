@@ -40,7 +40,7 @@ public class TemplateExpression
         scope.pushFrame();
         this.putArgsInScope(scope, args);
 
-        final Expression exp = this.getModifiedExpression();
+        final Expression exp = Modifier.modify(this.template, this.modifiers);
         ctx.pushCapture(scope);
 
         final Expression out;
@@ -56,25 +56,6 @@ public class TemplateExpression
         ctx.dropCapture();
         scope.dropFrame();
         return out;
-    }
-
-    // logic mildly redundant -- capture logic handled by parser
-    private Expression getModifiedExpression() {
-        Expression exp = this.template;
-        Modifier capturing = null;
-        for (final Modifier modifier : this.modifiers) {
-            if (capturing != null) {
-                capturing.captureModifier(modifier);
-            } if (modifier.capturesModifiers()) {
-                capturing = modifier;
-            } else {
-                exp = modifier.modify(exp);
-            }
-        }
-        if (capturing != null) {
-            return capturing.modify(exp);
-        }
-        return exp;
     }
 
     protected void checkArgs(final JsonValue... values) throws JelException {

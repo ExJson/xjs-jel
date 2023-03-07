@@ -5,6 +5,9 @@ import xjs.core.JsonType;
 import xjs.core.JsonValue;
 import xjs.jel.JelContext;
 import xjs.jel.exception.JelException;
+import xjs.jel.modifier.Modifier;
+
+import java.util.List;
 
 @FunctionalInterface
 public interface Expression {

@@ -27,6 +27,7 @@ public final class JelFunctions {
     private static final Random RAND = new Random();
 
     static {
+        register("dir", JelFunctions::dir);
         register("min", JelFunctions::min);
         register("max", JelFunctions::max);
         register("rand", JelFunctions::rand);
@@ -46,6 +47,7 @@ public final class JelFunctions {
         register("find", Privilege.EXPERIMENTAL, JelFunctions::find);
         register("type", JelFunctions::type);
         register("pretty", JelFunctions::pretty);
+        register("parse", JelFunctions::parse);
         register("isString", JelFunctions::isString);
         register("isNumber", JelFunctions::isNumber);
         register("isBool", JelFunctions::isBool);
@@ -98,6 +100,13 @@ public final class JelFunctions {
             this.function = function;
             this.privilege = privilege;
         }
+    }
+
+    public static Expression dir(
+            final JsonValue self, final JelContext ctx, final JsonValue... args) {
+        final JsonArray a = new JsonArray();
+        FUNCTIONS.keySet().forEach(a::add);
+        return of(a);
     }
 
     public static Expression min(
@@ -335,6 +344,12 @@ public final class JelFunctions {
         return instanceMethodOrSingleArg(self, args, v -> of(v.toString(JsonFormat.XJS)));
     }
 
+    public static Expression parse(
+            final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
+        return instanceMethodOrSingleArg(self, args, v ->
+            of(v.isString() ? ctx.eval(ctx.getSequencer().parse(v.asString())) : v));
+    }
+
     public static Expression isString(
             final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
         return instanceMethodOrSingleArg(self, args, v -> of(v.isString()));
@@ -420,6 +435,7 @@ public final class JelFunctions {
     }
 
     @FunctionalInterface
-    private interface ExpressionFunction extends
-        java.util.function.Function<JsonValue, Expression> {}
+    private interface ExpressionFunction {
+        Expression apply(final JsonValue value) throws JelException;
+    }
 }

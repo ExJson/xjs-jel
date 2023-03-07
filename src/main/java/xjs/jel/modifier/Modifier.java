@@ -47,7 +47,7 @@ public interface Modifier {
 
     default void captureModifier(final Modifier modifier) {}
 
-    default boolean canBeCaptured() {
+    default boolean canBeCaptured(final Modifier by) {
         return !this.changesValueType();
     }
 
@@ -57,5 +57,15 @@ public interface Modifier {
 
     default boolean changesValueType() {
         return this.getValueType() != JelType.NONE;
+    }
+
+    // capture logic handled by parser
+    static Expression modify(
+            final Expression template, final List<Modifier> captures) {
+        Expression exp = template;
+        for (final Modifier modifier : captures) {
+            exp = modifier.modify(exp);
+        }
+        return exp;
     }
 }

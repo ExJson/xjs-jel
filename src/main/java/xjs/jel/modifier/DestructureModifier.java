@@ -79,7 +79,7 @@ public class DestructureModifier
     }
 
     @Override
-    public boolean canBeCaptured() {
+    public boolean canBeCaptured(final Modifier by) {
         return false;
     }
 }

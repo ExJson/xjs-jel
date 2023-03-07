@@ -12,6 +12,7 @@ import xjs.serialization.token.ParsedToken;
 import xjs.serialization.token.Token;
 import xjs.serialization.token.TokenType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ModifierParser extends ParserModule {
@@ -23,26 +24,33 @@ public class ModifierParser extends ParserModule {
     public void parse(
             final JelMember.Builder builder, final ContainerToken.Itr itr) throws JelException {
         this.whitespaceCollector().append(builder, itr);
-        Modifier capturing = null;
+        final List<Modifier> capturing = new ArrayList<>();
         Token peek = itr.peek();
         while (peek != null) {
             if (peek.isSymbol(':')) {
                 return;
+            } else if (peek.isSymbol('\n')) {
+                itr.next();
+                peek = itr.peek();
+                continue;
             }
             final Modifier modifier = this.next(itr, peek);
             if (modifier == null) {
                 throw new JelException("Unknown modifier").withSpan(peek);
             }
-            // todo: more advanced capture logic
-            //  e.g. somehow support capturing modifiers in generator expressions
-            //  how does the generator handle callable modifiers getting captured?
-            if (capturing != null && modifier.canBeCaptured()) {
-                capturing.captureModifier(modifier);
-            } else {
+            boolean anyCaptured = false;
+            for (final Modifier captor : capturing) {
+                if (modifier.canBeCaptured(captor)) {
+                    captor.captureModifier(modifier);
+                    anyCaptured = true;
+                    break;
+                }
+            }
+            if (!anyCaptured) {
                 builder.modifier(modifier);
             }
             if (modifier.capturesModifiers()) {
-                capturing = modifier;
+                capturing.add(modifier);
             }
             this.whitespaceCollector().append(builder, itr);
             itr.next();

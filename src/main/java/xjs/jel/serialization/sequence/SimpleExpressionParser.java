@@ -119,6 +119,10 @@ public class SimpleExpressionParser extends ParserModule {
         final JelMember.Builder builder = JelMember.builder(JelType.ELEMENT);
         if (!spans.isEmpty()) {
             this.whitespaceCollector().delimit(builder, itr);
+            if (!hasSignificantTokens(itr)) {
+                spans.addAll(builder.subs());
+                return;
+            }
         }
         if (inlined) {
             spans.add((Span<?>) this.elementParser().parseInline(itr));

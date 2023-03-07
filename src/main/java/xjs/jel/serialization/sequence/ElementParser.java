@@ -85,7 +85,7 @@ public class ElementParser extends ParserModule {
             return this.valueParser().parse(itr, e, true);
         }
         final ContainerToken parent = (ContainerToken) itr.getParent();
-        if (JelType.isSignificant(parent.get(e - 1))) {
+        if (e == 0 || JelType.isSignificant(parent.get(e - 1))) {
             return this.valueParser().parse(itr, e, true);
         }
         final JelMember.Builder builder = JelMember.unformattedBuilder(JelType.ELEMENT);

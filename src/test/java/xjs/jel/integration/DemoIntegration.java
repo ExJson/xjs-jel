@@ -116,6 +116,46 @@ public final class DemoIntegration extends AbstractIntegrationTest {
     }
 
     @Test
+    public void generator_withConditional_isFilter() throws JelException {
+        this.parse("""
+            
+            numbers: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+            
+            evens >> [$numbers..]
+                if ($v % 2 == 0):
+              $v
+            
+            """);
+    }
+
+    @Test
+    public void timeFunction_example() throws JelException {
+        this.parse("""
+            /// n is a string which starts with a number
+            /// and is followed by a time unit.
+            /// for example:
+            ///  * '3h' = 3 hours
+            ///  * '5m' = 4 minutes
+            ///  * '1d' = 1 day
+            ///  * '0.5y' = 6 months
+            time >> (n) if: {
+              $n.endsWith(s): $parse($n.replace(s$,,))
+              $n.endsWith(m): 60 * $parse($n.replace(m$,,))
+              $n.endsWith(h): 360 * $parse($n.replace(h$,,))
+              $n.endsWith(y): 365 * $parse($n.replace(y$,,)) * 24 * 60 * 60
+              _ >> raise: {
+                msg >> if: {
+                  $n.matches(\\d+): no unit provided
+                  _: unknown unit: $n.replace(^\\d+,,)
+                }
+                details: must be one of: [ s, m, h, y ]
+              }
+            }
+            out: $time(5h)
+            """);
+    }
+
+    @Test
     public void matchArray_isLiteralArrayForNow() {
         this.inputSuccess("""
             a >> private: 1

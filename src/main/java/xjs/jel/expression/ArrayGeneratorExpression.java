@@ -7,20 +7,26 @@ import xjs.core.JsonValue;
 import xjs.jel.JelContext;
 import xjs.jel.JelMember;
 import xjs.jel.exception.JelException;
+import xjs.jel.modifier.Modifier;
 import xjs.jel.scope.Scope;
 import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
+
+import java.util.List;
 
 public class ArrayGeneratorExpression extends Sequence.Combined implements Expression {
     private static final String INDEX_NAME = "i";
     private static final String VALUE_NAME = "v";
 
     private final TupleExpression input;
+    private final List<Modifier> captures;
     private final Expression output;
 
-    public ArrayGeneratorExpression(final TupleExpression input, final Expression output) {
+    public ArrayGeneratorExpression(
+            final TupleExpression input, final List<Modifier> captures, final Expression output) {
         super(JelType.ARRAY_GENERATOR, getSpans(output));
         this.input = input;
+        this.captures = captures;
         this.output = output;
     }
 
@@ -33,7 +39,11 @@ public class ArrayGeneratorExpression extends Sequence.Combined implements Expre
             scope.pushFrame();
             scope.add(INDEX_NAME, new JsonReference(Json.value(i++)));
             scope.add(VALUE_NAME, ref);
-            array.add(this.output.apply(ctx));
+            final Expression modified = Modifier.modify(this.output, this.captures);
+            final JsonValue v = modified.apply(ctx);
+            if (!v.isNull()) {
+                array.add(v);
+            }
             scope.dropFrame();
         }
         return array;

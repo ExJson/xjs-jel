@@ -66,4 +66,9 @@ public class TemplateModifier
     public void captureModifier(final Modifier modifier) {
         this.captures.add(modifier);
     }
+
+    @Override
+    public boolean canBeCaptured(final Modifier by) {
+        return by instanceof TemplateModifier;
+    }
 }

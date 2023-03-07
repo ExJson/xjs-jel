@@ -55,7 +55,7 @@ public final class ArrayGeneratorExpressionTest {
 
     private static ArrayGeneratorExpression exp(
             final TupleExpression input, final Expression out) {
-        return new ArrayGeneratorExpression(input, out);
+        return new ArrayGeneratorExpression(input, new ArrayList<>(), out);
     }
 
     private static TupleExpression values(final Object... values) {
