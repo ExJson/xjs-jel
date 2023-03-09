@@ -22,7 +22,6 @@ public final class TemplateExpressionIntegrationTest extends AbstractIntegration
 
     @Test
     public void interpreter_toleratesRealisticFunction() {
-        System.out.println(TIME_FUNCTION);
         this.inputSuccess(TIME_FUNCTION + """
             a: $time(3m)
             b: $time(5h)

@@ -12,9 +12,10 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'io.github.exjson', name: 'xjs-core', version: '0.25'
+    implementation group: 'io.github.exjson', name: 'xjs-core', version: '0.29'
     implementation group: 'org.jetbrains', name: 'annotations', version: '23.0.0'
 
+    testImplementation group: 'io.github.exjson', name: 'xjs-compat', version: '0.7'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.8.1'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.8.1'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.8.1'

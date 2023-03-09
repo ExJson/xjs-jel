@@ -66,6 +66,32 @@ public final class ImportIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void import_canReadJsonFiles() {
+        this.inputSuccess("""
+            data >> import: data.json
+            """);
+        this.outputTrimmed("""
+            data: {
+              key: value
+            }
+            """);
+    }
+
+    @Test
+    public void import_canReadOtherFormats_withXjsCompat() {
+        this.inputSuccess("""
+            text >> import: text.txt
+            """);
+        this.outputTrimmed("""
+            text:\s
+              '''
+              plain text
+              in this file
+              '''
+            """);
+    }
+
+    @Test
     public void import_withSyntaxErrors_throwsException() {
         this.inputFailure("""
             >> import: syntax_errors.xjs
