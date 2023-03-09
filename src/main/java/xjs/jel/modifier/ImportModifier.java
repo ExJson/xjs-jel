@@ -43,7 +43,7 @@ public class ImportModifier
         final List<JelMember> members = new ArrayList<>();
         for (final JsonValue imported : importsArray) {
             if (!imported.isObject()) {
-                throw new JelException("non-object import must have alias")
+                throw new JelException("Non-object import must have alias")
                     .withSpan(this);
             }
             for (final JsonObject.Member m : imported.asObject()) {

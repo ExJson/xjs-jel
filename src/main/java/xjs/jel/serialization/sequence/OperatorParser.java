@@ -130,6 +130,7 @@ public class OperatorParser extends ParserModule {
             case '-':
             case '*':
             case '/':
+            case '%':
             case '^':
             case '&':
             case '|':

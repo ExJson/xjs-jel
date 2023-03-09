@@ -1,6 +1,7 @@
 package xjs.jel.modifier;
 
 import org.jetbrains.annotations.Nullable;
+import xjs.core.JsonCopy;
 import xjs.core.JsonLiteral;
 import xjs.core.JsonReference;
 import xjs.core.JsonValue;
@@ -53,7 +54,11 @@ public class SetModifier
                 .withSpans(this, this.path);
         }
         final JsonValue v = exp.apply(ctx);
-        refs.forEach(ref -> ref.set(v));
+        for (int i = 0; i < refs.size(); i++) {
+            final JsonValue toWrite =
+                i > 0 ? v.copy(JsonCopy.RECURSIVE | JsonCopy.FORMATTING) : v;
+            refs.get(i).applyOnly(toWrite::setDefaultMetadata);
+        }
     }
 
     @Override

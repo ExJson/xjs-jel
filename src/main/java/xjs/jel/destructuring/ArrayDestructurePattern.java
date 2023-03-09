@@ -58,7 +58,7 @@ public class ArrayDestructurePattern extends DestructurePattern {
             final DestructurePattern pattern = (DestructurePattern) span;
             final JsonValue v = ref.getOnly();
             if (v.isPrimitive()) {
-                throw this.error("cannot destructure element as container", span, v);
+                throw this.error("Cannot destructure element as container", span, v);
             }
             pattern.destructure(v.asContainer(), into);
         } else {
@@ -71,7 +71,7 @@ public class ArrayDestructurePattern extends DestructurePattern {
             final Span<?> span, final JsonContainer from) throws JelException {
         if (ref.getOnly().hasFlag(JelFlags.PRIVATE)) {
             throw this.error(
-                "element has private access: [" + i + "]=" + ref.getOnly(), span, from);
+                "Element has private access: [" + i + "]=" + ref.getOnly(), span, from);
         }
     }
 

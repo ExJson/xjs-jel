@@ -29,7 +29,7 @@ public class DestructureModifier
             final JelContext ctx, final JelMember member) throws JelException {
         if (member.getAlias().aliasType() != AliasType.DESTRUCTURE) {
             throw new JelException(
-                "cannot destructure--alias was expanded by another modifier")
+                "Cannot destructure--alias was expanded by another modifier")
                 .withSpan(this);
         }
         final JsonValue v = checkValue(ctx, member.getExpression());
@@ -43,7 +43,7 @@ public class DestructureModifier
             final JelContext ctx, final Expression exp) throws JelException {
         final JsonValue v = exp.apply(ctx);
         if (v.isPrimitive()) {
-            JelException e = new JelException("cannot destructure primitives")
+            JelException e = new JelException("Cannot destructure primitives")
                 .withDetails(v.toString());
             if (exp instanceof Span<?>) {
                 e = e.withSpan((Span<?>) exp);

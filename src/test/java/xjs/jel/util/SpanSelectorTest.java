@@ -87,9 +87,7 @@ public final class SpanSelectorTest {
                 4 | "here you go": '''test here''',
                     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^
                 5 | and another test: 1234,
-                   \s
                 6 | yet another test: 5678,
-                   \s
                 7 | 'okay': 'Im done now'
                     ^^^^^^  ^^^^^^^^^^^^^
             """;

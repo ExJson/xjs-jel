@@ -34,7 +34,12 @@ public class DelegateModifier
                     .withSpan(this.subs.get(0))
                     .withDetails("Expected a template or function named '" + key + "'");
             }
-            final Expression out = c.call(ctx.getParent(), ctx, value);
+            final Expression out;
+            try {
+                out = c.call(ctx.getParent(), ctx, value);
+            } catch (final JelException e) {
+                throw e.withSpan(this);
+            }
             if (out instanceof Callable) {
                 JelException e = new JelException("Unexpected callable returned by delegate")
                     .withSpan(this);

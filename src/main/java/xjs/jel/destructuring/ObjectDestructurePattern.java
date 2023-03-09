@@ -25,7 +25,7 @@ public class ObjectDestructurePattern extends DestructurePattern {
     @Override
     public void destructure(final JsonContainer from, final JsonObject into) throws JelException {
         if (from.isArray()) {
-            throw this.error("cannot destructure array as object", from);
+            throw this.error("Cannot destructure array as object", from);
         }
         for (final KeyPattern key : this.keys) {
             final JsonReference ref = from.asObject().getReference(key.source);
@@ -33,8 +33,9 @@ public class ObjectDestructurePattern extends DestructurePattern {
                 this.checkImport(ref, key, from);
                 into.addReference(key.key, ref);
             } else if (from instanceof JelObject && into instanceof JelObject) {
-                for (final JelMember m : ((JelObject) from).getCallables()) {
-                    ((JelObject) into).addCallable(m.getKey(), (Callable) m.getExpression());
+                final Callable c = ((JelObject) from).getCallable(key.source);
+                if (c != null) {
+                    ((JelObject) into).addCallable(key.key, c);
                 }
             }
         }
@@ -44,7 +45,7 @@ public class ObjectDestructurePattern extends DestructurePattern {
             final JsonReference ref, final KeyPattern pattern, final JsonContainer from) throws JelException {
         if (ref.getOnly().hasFlag(JelFlags.PRIVATE)) {
             throw this.error(
-                "key has private access: " + pattern.source, pattern, from);
+                "Key has private access: " + pattern.source, pattern, from);
         }
     }
 }

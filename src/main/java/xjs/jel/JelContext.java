@@ -244,6 +244,9 @@ public class JelContext {
 
     private @Nullable File fileInRoot(final String path) {
         final File relative = new File(this.root, path);
+        if (this.fileMap.containsKey(relative.getAbsolutePath())) {
+            return relative; // added manually
+        }
         if (relative.exists() && relative.isFile()) {
             return relative;
         }
@@ -316,6 +319,18 @@ public class JelContext {
 
     public void addOutput(final File file, final JsonValue value) {
         this.fileMap.put(file.getAbsolutePath(), value);
+    }
+
+    public @Nullable JelException getError(final String path) {
+        final File f = this.resolveFile(path);
+        if (f == null) {
+            throw new IllegalArgumentException("file not found: " + path);
+        }
+        return this.getError(f);
+    }
+
+    public JelException getError(final File file) {
+        return this.errorMap.get(file.getAbsolutePath());
     }
 
     public void log(final String s) {

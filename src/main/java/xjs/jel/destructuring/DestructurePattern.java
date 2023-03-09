@@ -28,6 +28,6 @@ public abstract class DestructurePattern extends Sequence.Combined {
             final String msg, final Span<?> span, final Object details) {
         return new JelException(msg)
             .withSpan(span)
-            .withDetails(details.toString());
+            .withDetails("Cannot destructure: " + details);
     }
 }

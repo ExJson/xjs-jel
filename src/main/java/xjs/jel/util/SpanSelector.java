@@ -122,9 +122,6 @@ public final class SpanSelector {
     private static void addUnderline(
             final List<Span<?>> spans, final StringBuilder sb,
             final String fullText, final String line, final int n, final int o) {
-        for (int i = 0; i < NUM_LENGTH + 3; i++) {
-            sb.append(' ');
-        }
         final BitSet underline = new BitSet(LINE_LENGTH);
         for (final Span<?> span : spans) {
             if (span.start() < 0) {
@@ -150,16 +147,21 @@ public final class SpanSelector {
                 }
             }
         }
-        int i = 0;
-        while (i < underline.length()) {
-            final int end = underline.nextSetBit(i);
-            for (int j = i; j < end; j++) {
+        if (underline.length() > 0) {
+            for (int i = 0; i < NUM_LENGTH + 3; i++) {
                 sb.append(' ');
             }
-            sb.append('^');
-            i = end + 1;
+            int i = 0;
+            while (i < underline.length()) {
+                final int end = underline.nextSetBit(i);
+                for (int j = i; j < end; j++) {
+                    sb.append(' ');
+                }
+                sb.append('^');
+                i = end + 1;
+            }
+            sb.append('\n');
         }
-        sb.append('\n');
     }
 
     private static int getEndOffset(final String fullText, final Span<?> span) {
