@@ -28,9 +28,10 @@ public class MatchParser extends ParserModule {
         }
         final MatchModifier match = (MatchModifier) modifier;
         final Token source = parentItr.next();
-        if (source.type() != TokenType.BRACES) {
+        if (source == null || source.type() != TokenType.BRACES) {
+            final Span<?> error = source != null ? source : match;
             throw new JelException("Expected match expression")
-                .withSpan(source)
+                .withSpan(error)
                 .withDetails(
                     "Hint: a match expression is an object where each key may be any value or '_'\n"
                     + "For example:\n"

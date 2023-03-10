@@ -371,7 +371,7 @@ public class OperatorParser extends ParserModule {
             throw new JelException("Illegal modifier")
                 .withSpans(itr.peek(0), peek)
                 .withDetails(
-                    "Hint: modifier must proceed a reference, parentheses, or positive number"
+                    "Hint: modifier must proceed a reference, parentheses, or positive number\n"
                     + "Note: this restriction is pending feedback and may get removed");
         }
     }

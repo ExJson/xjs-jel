@@ -61,7 +61,7 @@ public final class RetokenizerTest {
 
     @Test
     public void inspectValue_whenPathIsSurroundedByQuotes_parsesQuotesAsText() {
-        final List<Token> tokens = inspectValue("'hello \\'$mom\\' and dad'");
+        final List<Token> tokens = inspectValue("'''hello '$mom' and dad'''");
 
         assertEquals(4, tokens.size());
         assertEquals("hello '", tokens.get(0).parsed());

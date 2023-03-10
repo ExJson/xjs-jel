@@ -233,7 +233,7 @@ public class Retokenizer extends Tokenizer {
         if (t instanceof ParsedToken && c != '.' && c != '(' && c != '[' && c != '{') {
             this.pathing = false;
         } else if (this.containers.isEmpty() &&
-                (Character.isWhitespace(c) || c == ')' || c == ']' || c == '}')) {
+                (Character.isWhitespace(c) || c == '\'' || c == '"' || c == ')' || c == ']' || c == '}')) {
             this.pathing = false;
         } else if (t.isSymbol('$')) {
             if (Character.isLetter(c) || c == '.' || c == '(' || c == '[' || c == '{') {
