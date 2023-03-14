@@ -400,10 +400,11 @@ public class JelContext {
     }
 
     protected String getFilename() {
-        if (this.filesInProgress.isEmpty()) {
+        final String path = this.scope.getFilePath();
+        if (path == null) {
             return "evaluator";
         }
-        return this.filesInProgress.peek().getName();
+        return new File(path).getName();
     }
 
     public void dispose() {
