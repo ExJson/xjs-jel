@@ -12,7 +12,6 @@ public enum JelType {
     NUMBER_EXPRESSION,
     BOOLEAN,
     BOOLEAN_EXPRESSION,
-    BOOLEAN_KEY,
     NULL,
     STRING,
     STRING_EXPRESSION,

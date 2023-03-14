@@ -4,13 +4,14 @@ import xjs.core.JsonContainer;
 import xjs.core.JsonObject;
 import xjs.core.JsonReference;
 import xjs.jel.JelFlags;
-import xjs.jel.JelMember;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.Callable;
 import xjs.jel.lang.JelObject;
 import xjs.jel.sequence.JelType;
+import xjs.serialization.Span;
 import xjs.serialization.token.ContainerToken;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ObjectDestructurePattern extends DestructurePattern {
@@ -47,5 +48,20 @@ public class ObjectDestructurePattern extends DestructurePattern {
             throw this.error(
                 "Key has private access: " + pattern.source, pattern, from);
         }
+    }
+
+    @Override
+    public List<Span<?>> flatten() {
+        final List<Span<?>> flat = new ArrayList<>();
+        for (final KeyPattern key : this.keys) {
+            flat.addAll(key.flatten());
+        }
+        for (final Span<?> sub : this.subs) {
+            if (!JelType.isSignificant(sub)) {
+                flat.add(sub);
+            }
+        }
+        flat.sort(Span::compareTo);
+        return flat;
     }
 }

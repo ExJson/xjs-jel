@@ -9,6 +9,11 @@ import xjs.jel.path.JsonPath;
 import xjs.jel.sequence.AliasType;
 import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
+import xjs.serialization.Span;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Alias extends Sequence.Parent {
     private final Object alias;
@@ -84,5 +89,14 @@ public class Alias extends Sequence.Parent {
             return AliasType.VALUE;
         }
         return AliasType.DESTRUCTURE;
+    }
+
+    @Override
+    public List<Span<?>> flatten() {
+        if (this.alias instanceof String) {
+            return Collections.singletonList(
+                new Sequence.Parent(JelType.KEY, Collections.singletonList(this)));
+        }
+        return super.flatten();
     }
 }

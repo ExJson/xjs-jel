@@ -7,10 +7,14 @@ import xjs.core.JsonValue;
 import xjs.jel.JelFlags;
 import xjs.jel.exception.JelException;
 import xjs.jel.sequence.JelType;
+import xjs.jel.sequence.Sequence;
 import xjs.serialization.Span;
 import xjs.serialization.token.ContainerToken;
 import xjs.serialization.token.ParsedToken;
+import xjs.serialization.token.Token;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ArrayDestructurePattern extends DestructurePattern {
@@ -77,5 +81,26 @@ public class ArrayDestructurePattern extends DestructurePattern {
 
     protected static int wrapIndex(final int size, final int idx) {
         return idx >= 0 ? idx : size + idx;
+    }
+
+    @Override
+    public List<Span<?>> flatten() {
+        final List<Span<?>> flat = new ArrayList<>();
+        this.flattenInto(flat, this.beginning);
+        this.flattenInto(flat, this.end);
+        return flat;
+    }
+
+    protected void flattenInto(final List<Span<?>> flat, final List<Span<?>> source) {
+        for (final Span<?> sub : source) {
+            if (sub instanceof ParsedToken) {
+                flat.add(new Sequence.Primitive(
+                    JelType.KEY, Collections.singletonList((Token) sub)));
+            } else if (sub instanceof Sequence<?>) {
+                flat.addAll(((Sequence<?>) sub).flatten());
+            } else {
+                flat.add(sub);
+            }
+        }
     }
 }

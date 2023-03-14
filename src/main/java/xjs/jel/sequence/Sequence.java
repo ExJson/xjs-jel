@@ -8,10 +8,8 @@ import xjs.serialization.token.Token;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 public abstract class Sequence<T extends Span<?>>
         extends Span<JelType>
@@ -90,10 +88,6 @@ public abstract class Sequence<T extends Span<?>>
         return this.subs;
     }
 
-    public List<Sequence<?>> get(final JelType type) {
-        throw new UnsupportedOperationException("not a parent");
-    }
-
     public List<Sequence<?>> subsequences() {
         return Collections.emptyList();
     }
@@ -137,33 +131,15 @@ public abstract class Sequence<T extends Span<?>>
     }
 
     public static class Parent extends Sequence<Sequence<?>> {
-        private final Map<JelType, List<Sequence<?>>> subMap;
 
         public Parent(
                 final JelType type, final List<Sequence<?>> subs) {
             super(type, subs);
-            this.subMap = new HashMap<>();
         }
 
         public Parent(
                 final JelType type, final Span<?> s, final Span<?> e, final List<Sequence<?>> subs) {
             super(type, s, e, subs);
-            this.subMap = new HashMap<>();
-        }
-
-        @Override
-        public List<Sequence<?>> get(final JelType type) {
-            return this.subMap.computeIfAbsent(type, this::compute);
-        }
-
-        private List<Sequence<?>> compute(final JelType type) {
-            final List<Sequence<?>> sequences = new ArrayList<>();
-            for (final Sequence<?> sequence : this.subs) {
-                if (sequence.type().is(type)) {
-                    sequences.add(sequence);
-                }
-            }
-            return sequences;
         }
 
         @Override

@@ -1,8 +1,6 @@
 package xjs.jel.serialization.sequence;
 
-
 import org.jetbrains.annotations.Nullable;
-import xjs.jel.JelMember;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.ReferenceExpression;
 import xjs.jel.expression.TupleExpression;
@@ -12,6 +10,7 @@ import xjs.jel.path.IndexRangeComponent;
 import xjs.jel.path.InlinePathComponent;
 import xjs.jel.path.KeyComponent;
 import xjs.jel.path.PathComponent;
+import xjs.jel.sequence.Sequence;
 import xjs.serialization.Span;
 import xjs.serialization.token.ContainerToken;
 import xjs.serialization.token.NumberToken;
@@ -256,14 +255,14 @@ public class ReferenceParser extends ParserModule {
         this.checkReservedLambda(args);
 
         final ContainerToken.Itr argItr = args.iterator();
-        final JelMember member = this.elementParser().parse(argItr);
+        final Sequence<?> exp = (Sequence<?>) this.elementParser().parseInline(argItr);
         if (argItr.hasNext()) {
             throw new JelException("Unexpected tokens at end of container")
                 .withSpan(argItr.next())
                 .withDetails("Inline path must contain a single JSON element");
         }
         itr.next();
-        return new InlinePathComponent(args, member);
+        return new InlinePathComponent(args, exp);
     }
 
     @SuppressWarnings("UnstableApiUsage")

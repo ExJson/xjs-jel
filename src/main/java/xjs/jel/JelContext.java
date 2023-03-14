@@ -52,18 +52,19 @@ public class JelContext {
     private int privilege;
     private int folderDepth;
 
-    public JelContext(final File root) {
+    public JelContext(final @Nullable File root) {
         this(root, null);
     }
 
-    public JelContext(final File root, final @Nullable Logger log) {
+    public JelContext(
+            final @Nullable File root, final @Nullable Logger log) {
         this.fileMap = new HashMap<>();
         this.errorMap = new HashMap<>();
         this.scopeStack = new Stack<>();
         this.parentStack = new Stack<>();
         this.inProgress = new HashSet<>();
         this.filesInProgress = new Stack<>();
-        this.root = root;
+        this.root = root != null ? root : new File(System.getProperty("user.dir"));
         this.isGlobal = this == GLOBAL_CONTEXT || isGlobal(root);
         this.sequencer = Sequencer.JEL;
         this.log = log;
@@ -73,7 +74,8 @@ public class JelContext {
         this.folderDepth = 8;
     }
 
-    private static boolean isGlobal(final File root) {
+    private static boolean isGlobal(final @Nullable File root) {
+        if (root == null) return false;
         return root.getAbsolutePath().equals(new File("/").getAbsolutePath());
     }
 

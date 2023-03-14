@@ -1,7 +1,6 @@
 package xjs.jel.serialization.sequence;
 
 import org.jetbrains.annotations.Nullable;
-import xjs.core.StringType;
 import xjs.jel.Alias;
 import xjs.jel.JelMember;
 import xjs.jel.destructuring.DestructurePattern;
@@ -14,13 +13,9 @@ import xjs.jel.expression.ReferenceExpression;
 import xjs.jel.modifier.Modifier;
 import xjs.jel.sequence.AliasType;
 import xjs.jel.sequence.JelType;
-import xjs.jel.serialization.token.Retokenizer;
 import xjs.serialization.Span;
 import xjs.serialization.token.ContainerToken;
-import xjs.serialization.token.StringToken;
 import xjs.serialization.token.Token;
-import xjs.serialization.token.TokenType;
-import xjs.serialization.util.StringContext;
 
 import java.util.Collections;
 import java.util.List;
@@ -44,12 +39,15 @@ public class KeyParser extends ParserModule {
         this.whitespaceCollector().append(builder, itr);
 
         // todo: configurable string inspection
+        final int s = itr.getIndex();
         int keyIdx = this.endOfKey(itr);
-        final int aliasIdx = this.endOfAlias(itr, keyIdx);
+        final int endOfSeparator = itr.getIndex() + 1;
+        final int aliasIdx = this.endOfAlias(itr, s, keyIdx);
         final List<Modifier> modifiers =
             this.readModifiers(builder, itr, keyIdx, aliasIdx);
 
         final AliasType type = getAliasType(modifiers, forcedAlias);
+        itr.skipTo(s);
         this.readAlias(builder, itr, type, aliasIdx, keyIdx);
 
         if (builder.alias() != null) {
@@ -57,21 +55,25 @@ public class KeyParser extends ParserModule {
                 modifier.captureAlias(builder.alias());
             }
         }
-        itr.skipTo(keyIdx + 1);
+        if (endOfSeparator > keyIdx) {
+            itr.skipTo(keyIdx);
+            this.whitespaceCollector().append(builder, itr, endOfSeparator);
+        }
+        itr.skipTo(endOfSeparator);
     }
 
     protected int endOfKey(final ContainerToken.Itr itr) throws JelException {
         final Token first = itr.peek();
         Token peek = first;
-        int lastSignificant = 0;
-        int amount = 0;
+        int lastSignificant = itr.getIndex() - 1;
         while (peek != null) {
             if (peek.isSymbol(':')) {
-                return itr.getIndex() + lastSignificant;
+                return lastSignificant + 1;
             } else if (JelType.isSignificant(peek)) {
-                lastSignificant = amount;
+                lastSignificant = itr.getIndex();
             }
-            peek = itr.peek(++amount);
+            itr.next();
+            peek = itr.peek();
         }
         throw new JelException("expected key")
             .withSpan(first != null ? first : itr.getParent())
@@ -84,20 +86,18 @@ public class KeyParser extends ParserModule {
         if (keyIdx == aliasIdx) {
             return Collections.emptyList();
         }
-        final int start = itr.getIndex();
         itr.skipTo(aliasIdx + 2);
         this.modifierParser().parse(builder, itr);
-        itr.skipTo(start);
         return builder.modifiers();
     }
 
     protected int endOfAlias(
-            final ContainerToken.Itr itr, final int e) {
+            final ContainerToken.Itr itr, final int s, final int e) {
         final ContainerToken tokens = (ContainerToken) itr.getParent();
-        for (int i = itr.getIndex(); i < e - 1; i++) {
+        for (int i = itr.getIndex(); i > s; i--) {
             if (tokens.get(i).isSymbol('>')
-                    && tokens.get(i + 1).isSymbol('>')) {
-                return i;
+                    && tokens.get(i - 1).isSymbol('>')) {
+                return i - 1;
             }
         }
         return e;
@@ -233,7 +233,7 @@ public class KeyParser extends ParserModule {
             final int aliasIdx, final int keyIdx) {
         if (itr.getIndex() < aliasIdx || aliasIdx == keyIdx) {
             final LiteralExpression exp =
-                this.expressionParser().literalPrimitive(itr, aliasIdx);
+                this.expressionParser().literalString(itr, aliasIdx);
             builder.alias(Alias.of(exp));
         }
     }

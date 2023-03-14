@@ -63,4 +63,15 @@ public class ConditionalModifier
         }
         return JelType.NONE;
     }
+
+    @Override
+    public List<Span<?>> flatten() {
+        final List<Span<?>> flat = new ArrayList<>();
+        flat.add(new Sequence.Primitive(
+            JelType.FLAG, Collections.singletonList((Token)this.subs.get(0))));
+        if (this.subs.size() > 1) {
+            flat.addAll(((Sequence<?>)this.subs.get(1)).flatten());
+        }
+        return flat;
+    }
 }

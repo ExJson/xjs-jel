@@ -63,7 +63,7 @@ public class ValueParser extends ParserModule {
         if (peek == null) {
             return JelType.NONE;
         }
-        if (!inlined) { // disallow starting with {}[] in regular values
+        if (!inlined || itr.getIndex() == e - 1) { // disallow starting with {}[] in regular values
             if (peek.type() == TokenType.BRACES) {
                 return JelType.OBJECT;
             } else if (peek.type() == TokenType.BRACKETS) {
@@ -76,13 +76,6 @@ public class ValueParser extends ParserModule {
             return JelType.STRING_EXPRESSION;
         } else if (this.referenceParser().isReference(itr, peek, 1)) {
             return JelType.REFERENCE;
-        }
-        if (inlined && itr.getIndex() == e - 1) {
-            if (peek.type() == TokenType.BRACES) {
-                return JelType.OBJECT;
-            } else if (peek.type() == TokenType.BRACKETS) {
-                return JelType.ARRAY;
-            }
         }
         return JelType.NONE;
     }

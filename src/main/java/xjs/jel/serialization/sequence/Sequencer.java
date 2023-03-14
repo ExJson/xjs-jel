@@ -1,7 +1,9 @@
 package xjs.jel.serialization.sequence;
 
 import xjs.exception.SyntaxException;
+import xjs.jel.JelMember;
 import xjs.jel.exception.JelException;
+import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
 import xjs.serialization.token.ContainerToken;
 import xjs.serialization.token.TokenType;
@@ -63,7 +65,12 @@ public class Sequencer {
         if (this.isOpenRoot(tokens)) {
             return this.readOpenRoot(tokens);
         }
-        return this.elementParser.parse(tokens.iterator());
+        final ContainerToken.Itr itr = tokens.iterator();
+        final JelMember.Builder builder = JelMember.unformattedBuilder(JelType.ELEMENT);
+        this.elementParser.parse(builder, itr);
+        this.whitespaceCollector.append(builder, itr);
+        this.streamAnalyzer.checkDangling(itr, tokens.size());
+        return builder.build();
     }
 
     protected Sequence<?> readOpenRoot(final ContainerToken tokens) throws JelException {

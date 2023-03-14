@@ -8,8 +8,12 @@ import xjs.jel.expression.TemplateExpression;
 import xjs.jel.sequence.AliasType;
 import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
+import xjs.serialization.Span;
 import xjs.serialization.token.ContainerToken;
 import xjs.serialization.token.ParsedToken;
+import xjs.serialization.token.StringToken;
+import xjs.serialization.token.Token;
+import xjs.serialization.token.TokenType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +26,7 @@ public class TemplateModifier
 
     public TemplateModifier(
             final ContainerToken source, final List<ParsedToken> params) {
-        super(JelType.TUPLE, source, source, new ArrayList<>(source.viewTokens()));
+        super(JelType.IDENTIFIERS, source, source, new ArrayList<>(source.viewTokens()));
         this.captures = new ArrayList<>();
         this.params = buildParams(params);
     }
@@ -70,5 +74,18 @@ public class TemplateModifier
     @Override
     public boolean canBeCaptured(final Modifier by) {
         return by instanceof TemplateModifier;
+    }
+
+    @Override
+    public List<Span<?>> flatten() {
+        final List<Span<?>> flat = new ArrayList<>();
+        for (final Token sub : this.subs) {
+            if (sub instanceof StringToken || sub.type() == TokenType.WORD) {
+                flat.add(new Sequence.Primitive(JelType.KEY, Collections.singletonList(sub)));
+            } else {
+                flat.add(sub);
+            }
+        }
+        return flat;
     }
 }

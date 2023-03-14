@@ -11,6 +11,8 @@ import xjs.jel.exception.JelException;
 import xjs.jel.expression.Expression;
 import xjs.jel.expression.LiteralExpression;
 import xjs.jel.modifier.Modifier;
+import xjs.jel.modifier.TemplateModifier;
+import xjs.jel.sequence.AliasType;
 import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
 import xjs.serialization.Span;
@@ -222,6 +224,35 @@ public class JelMember
         }
         this.modified = true;
         return processed;
+    }
+
+    @Override
+    public List<Span<?>> flatten() {
+        if (!this.isTemplate()) {
+            return super.flatten();
+        }
+        final List<Span<?>> flat = new ArrayList<>();
+        for (final Span<?> sub : this.subs) {
+            if (sub instanceof Alias &&
+                    ((Alias) sub).aliasType() == AliasType.LITERAL) {
+                flat.add(new Sequence.Parent(
+                    JelType.CALL, Collections.singletonList((Alias) sub)));
+            } else if (sub instanceof Sequence) {
+                flat.addAll(((Sequence<?>) sub).flatten());
+            } else {
+                flat.add(sub);
+            }
+        }
+        return flat;
+    }
+
+    protected boolean isTemplate() {
+        for (final Modifier m : this.modifiers) {
+            if (m instanceof TemplateModifier) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static class Builder {

@@ -133,6 +133,28 @@ public class SimpleExpressionParser extends ParserModule {
         }
     }
 
+    public LiteralExpression literalString(
+            final ContainerToken.Itr itr, final int e) {
+        final Token first = itr.peek();
+        if (first == null) {
+            return this.voidString(itr.getParent());
+        } else if (e == 0 || itr.getIndex() == e) {
+            return this.voidString(first);
+        }
+        final Token last = ((ContainerToken) itr.getParent()).get(e - 1);
+
+        if (first == last) {
+            if (first instanceof StringToken) {
+                itr.skipTo(e);
+                return LiteralExpression.of((StringToken) first);
+            }
+        }
+        final List<Token> tokens =
+            itr.getParent().viewTokens().subList(itr.getIndex(), e);
+        itr.skipTo(e);
+        return LiteralExpression.of(tokens, this.getText(itr, first, last));
+    }
+
     public LiteralExpression literalPrimitive(
             final ContainerToken.Itr itr, final int e) {
         final Token first = itr.peek();
