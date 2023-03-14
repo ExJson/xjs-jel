@@ -1,0 +1,2 @@
+{ throw } >> import from: templates.xjs
+scoped_throw >> () : $throw()

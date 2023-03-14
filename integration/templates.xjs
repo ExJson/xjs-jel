@@ -1,2 +1,3 @@
 get_hello >> (): 'hello, world!'
 say_hello >> () log: 'hello, world!'
+throw >> () raise: 'demo error'

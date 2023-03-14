@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import xjs.core.Json;
 import xjs.core.JsonArray;
 import xjs.core.JsonObject;
+import xjs.jel.JelContext;
 import xjs.jel.JelFlags;
 import xjs.jel.destructuring.ArrayDestructurePattern;
 import xjs.jel.destructuring.DestructurePattern;
@@ -35,7 +36,7 @@ public final class ArrayDestructurePatternTest {
             List.of(value("a"), value("b"), value("c")),
             List.of());
 
-        pattern.destructure(from, into);
+        pattern.destructure(JelContext.GLOBAL_CONTEXT, from, into);
         assertEquals(expected, into);
     }
 
@@ -51,7 +52,7 @@ public final class ArrayDestructurePatternTest {
             List.of(value("a"), value("b"), value("c")),
             List.of());
 
-        pattern.destructure(from, into);
+        pattern.destructure(JelContext.GLOBAL_CONTEXT, from, into);
         assertEquals(expected, into);
     }
 
@@ -71,7 +72,7 @@ public final class ArrayDestructurePatternTest {
             List.of(value("a"), value("b"), value("c")),
             List.of(value("x"), value("y"), value("z")));
 
-        pattern.destructure(from, into);
+        pattern.destructure(JelContext.GLOBAL_CONTEXT, from, into);
         assertEquals(expected, into);
     }
 
@@ -87,7 +88,7 @@ public final class ArrayDestructurePatternTest {
             List.of(),
             List.of(value("x"), value("y"), value("z")));
 
-        pattern.destructure(from, into);
+        pattern.destructure(JelContext.GLOBAL_CONTEXT, from, into);
         assertEquals(expected, into);
     }
 
@@ -110,7 +111,7 @@ public final class ArrayDestructurePatternTest {
                 pattern(key("d", "x"))),
             List.of());
 
-        pattern.destructure(from, into);
+        pattern.destructure(JelContext.GLOBAL_CONTEXT, from, into);
         assertEquals(expected, into);
     }
 
@@ -122,7 +123,7 @@ public final class ArrayDestructurePatternTest {
             List.of(value("a")), List.of());
 
         assertThrows(JelException.class, () ->
-            pattern.destructure(from, Json.object()));
+            pattern.destructure(JelContext.GLOBAL_CONTEXT, from, Json.object()));
     }
 
     private static ParsedToken value(final String key) {

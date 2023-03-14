@@ -55,33 +55,26 @@ public class CallComponent extends PathComponent {
             final JelContext ctx,
             final @Nullable ReferenceAccessor accessor,
             final JsonValue parent) throws JelException {
-        try {
-            return this.tryGetAll(ctx, accessor, parent);
-        } catch (final JelException e) {
-            throw e.withSpan(this);
-        }
-    }
-
-    private List<JsonReference> tryGetAll(
-            final JelContext ctx,
-            final @Nullable ReferenceAccessor accessor,
-            final JsonValue parent) throws JelException {
         Callable callable = this.getCallable(ctx, accessor);
         if (callable == null) {
             return Collections.emptyList();
         }
         final List<JsonValue[]> argsList = this.getArgs(ctx);
-        Expression e = callable;
+        Expression exp = callable;
         for (final JsonValue[] args : argsList) {
-            if (!(e instanceof Callable)) {
+            if (!(exp instanceof Callable)) {
                 return Collections.emptyList();
             }
-            e = ((Callable) e).call(parent, ctx, args);
+            try {
+                exp = ((Callable) exp).call(parent, ctx, args);
+            } catch (final JelException e) {
+                throw e.withSpan(ctx, this);
+            }
         }
-        if (e instanceof Callable) {
+        if (exp instanceof Callable) {
             return Collections.emptyList();
         }
-        final JsonValue r = e.apply(ctx);
+        final JsonValue r = exp.apply(ctx);
         return Collections.singletonList(new JsonReference(r));
     }
 

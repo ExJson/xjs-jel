@@ -4,6 +4,7 @@ import xjs.core.JsonContainer;
 import xjs.core.JsonObject;
 import xjs.core.JsonReference;
 import xjs.core.JsonValue;
+import xjs.jel.JelContext;
 import xjs.jel.JelFlags;
 import xjs.jel.exception.JelException;
 import xjs.jel.sequence.JelType;
@@ -30,12 +31,12 @@ public class ArrayDestructurePattern extends DestructurePattern {
 
     @Override
     public void destructure(
-            final JsonContainer from, final JsonObject into) throws JelException {
+            final JelContext ctx, final JsonContainer from, final JsonObject into) throws JelException {
         for (int i = 0; i < this.beginning.size(); i++) {
             if (i >= from.size()) {
                 break;
             }
-            this.copy(from, into, i, this.beginning.get(i));
+            this.copy(ctx, from, into, i, this.beginning.get(i));
         }
         final int s = Math.max(0, this.end.size() - from.size());
         for (int i = s; i < this.end.size(); i++) {
@@ -44,38 +45,38 @@ public class ArrayDestructurePattern extends DestructurePattern {
             if (idx < 0 || idx >= from.size()) {
                 break;
             }
-            this.copy(from, into, idx, this.end.get(i));
+            this.copy(ctx, from, into, idx, this.end.get(i));
         }
     }
 
     protected void copy(
-            final JsonContainer from, final JsonObject into,
+            final JelContext ctx, final JsonContainer from, final JsonObject into,
             final int idx, final Span<?> span) throws JelException {
         final JsonReference ref = from.getReference(idx);
         if (ref == null) {
             return;
         }
-        this.checkImport(ref, idx, span, from);
+        this.checkImport(ctx, ref, idx, span, from);
         if (span instanceof ParsedToken) {
             into.addReference(((ParsedToken) span).parsed(), ref);
         } else if (span instanceof DestructurePattern) {
             final DestructurePattern pattern = (DestructurePattern) span;
             final JsonValue v = ref.getOnly();
             if (v.isPrimitive()) {
-                throw this.error("Cannot destructure element as container", span, v);
+                throw this.error(ctx, "Cannot destructure element as container", span, v);
             }
-            pattern.destructure(v.asContainer(), into);
+            pattern.destructure(ctx, v.asContainer(), into);
         } else {
             throw new IllegalStateException("unsupported span: " + span);
         }
     }
 
     protected void checkImport(
-            final JsonReference ref, final int i,
+            final JelContext ctx, final JsonReference ref, final int i,
             final Span<?> span, final JsonContainer from) throws JelException {
         if (ref.getOnly().hasFlag(JelFlags.PRIVATE)) {
             throw this.error(
-                "Element has private access: [" + i + "]=" + ref.getOnly(), span, from);
+                ctx, "Element has private access: [" + i + "]=" + ref.getOnly(), span, from);
         }
     }
 

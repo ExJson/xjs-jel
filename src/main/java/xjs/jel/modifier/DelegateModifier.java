@@ -31,18 +31,18 @@ public class DelegateModifier
             if (c == null) {
                 final String key = this.getKey();
                 throw new JelException("Callable not in scope: " + key)
-                    .withSpan(this.subs.get(0))
+                    .withSpan(ctx, this.subs.get(0))
                     .withDetails("Expected a template or function named '" + key + "'");
             }
             final Expression out;
             try {
                 out = c.call(ctx.getParent(), ctx, value);
             } catch (final JelException e) {
-                throw e.withSpan(this);
+                throw e.withSpan(ctx, this);
             }
             if (out instanceof Callable) {
                 JelException e = new JelException("Unexpected callable returned by delegate")
-                    .withSpan(this);
+                    .withSpan(ctx, this);
                 if (out instanceof Span<?>) {
                     e = e.withSpan((Span<?>) out);
                 }

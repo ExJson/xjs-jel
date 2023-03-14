@@ -36,29 +36,29 @@ public class BooleanExpression extends OperatorExpression {
             final JelContext ctx, final Sequence<Sequence<?>>.Itr itr) throws JelException {
         boolean out = getNextBoolean(ctx, itr);
         while (itr.hasNext()) {
-            out = applyAsBoolean(getNextOperator(itr), out, getNextBoolean(ctx, itr));
+            out = applyAsBoolean(this.getNextOperator(ctx, itr), out, this.getNextBoolean(ctx, itr));
         }
         return Json.value(out);
     }
 
-    protected static boolean getNextBoolean(
+    protected boolean getNextBoolean(
             final JelContext ctx, final Sequence<Sequence<?>>.Itr itr) throws JelException {
         final Sequence<?> next = itr.next();
         if (next == null) {
-            throw new JelException("no booleans");
+            throw new JelException("no booleans").withSpan(ctx, this);
         }
         if (next instanceof ModifyingOperatorSequence) {
             final ModifyingOperatorSequence m = (ModifyingOperatorSequence) next;
             if (m.op != ModifyingOperator.NOT) {
                 throw new JelException("Unsupported modifier in boolean expression")
-                    .withSpan(m)
+                    .withSpan(ctx, m)
                     .withDetails("Hint: boolean expression only supports '!' modifier");
             }
             return !getNextBoolean(ctx, itr);
         }
         if (!(next instanceof Expression)) {
             throw new JelException("Illegal operand")
-                .withSpan(next);
+                .withSpan(ctx, next);
         }
         final Operator relational = getRelationalOperator(itr);
         if (relational != null) {

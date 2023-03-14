@@ -44,7 +44,7 @@ public abstract class AbstractIntegrationTest {
             return Sequencer.JEL.parse(text);
         } catch (final JelException e) {
             if (!this.expectingFailure) {
-                LOGGER.log(Level.SEVERE, "\n\n" + e.format(text));
+                LOGGER.log(Level.SEVERE, "\n\n" + e.format(this.ctx, text));
             }
             throw e;
         }
@@ -55,7 +55,7 @@ public abstract class AbstractIntegrationTest {
             this.fullText = fullText;
             this.valueOut = this.parse(fullText);
         } catch (final JelException e) {
-            LOGGER.log(Level.SEVERE, "\n\n" + e.format(fullText));
+            LOGGER.log(Level.SEVERE, "\n\n" + e.format(this.ctx, fullText));
             fail("Expected happy path", e);
         }
     }
@@ -67,7 +67,7 @@ public abstract class AbstractIntegrationTest {
             this.expectingFailure = true;
             value = this.parse(fullText);
         } catch (final JelException e) {
-            this.errorOut = e.format(fullText);
+            this.errorOut = e.format(this.ctx, fullText);
             return;
         }
         fail("Expected JelException, but no exception was thrown\n" + value);

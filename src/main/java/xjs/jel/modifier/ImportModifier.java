@@ -44,7 +44,7 @@ public class ImportModifier
         for (final JsonValue imported : importsArray) {
             if (!imported.isObject()) {
                 throw new JelException("Non-object import must have alias")
-                    .withSpan(this);
+                    .withSpan(ctx, this);
             }
             for (final JsonObject.Member m : imported.asObject()) {
                 final JsonValue v = m.getOnly();
@@ -78,7 +78,7 @@ public class ImportModifier
             final JelContext ctx, final String path) throws JelException {
         if (ctx.isLoading(path)) {
             throw new JelException("Illegal cyclical reference")
-                .withSpan(this)
+                .withSpan(ctx, this)
                 .withDetails("Hint: this file is also being loaded by " + path);
         }
         return ctx.getImport(path)

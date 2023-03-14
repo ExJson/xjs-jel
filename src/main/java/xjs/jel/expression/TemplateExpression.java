@@ -41,21 +41,22 @@ public class TemplateExpression
         this.putArgsInScope(scope, args);
 
         final Expression exp = Modifier.modify(this.template, this.modifiers);
-        ctx.pushCapture(scope);
+        ctx.pushScope(scope);
 
-        final Expression out;
-        if (exp instanceof Callable) {
-            final Callable c = (Callable) exp;
-            if (c.capturesScope()) {
-                c.setCapture(scope.capture());
+        try {
+            if (exp instanceof Callable) {
+                final Callable c = (Callable) exp;
+                if (c.capturesScope() && !c.hasCapture()) {
+                    c.setCapture(scope.capture());
+                }
+                return c;
+            } else {
+                return LiteralExpression.of(exp.apply(ctx));
             }
-            out = c;
-        } else {
-            out = LiteralExpression.of(exp.apply(ctx));
+        } finally {
+            ctx.dropScope();
+            scope.dropFrame();
         }
-        ctx.dropCapture();
-        scope.dropFrame();
-        return out;
     }
 
     protected void checkArgs(final JsonValue... values) throws JelException {
@@ -84,5 +85,10 @@ public class TemplateExpression
     @Override
     public void setCapture(final @NotNull Scope scope) {
         this.capture = scope;
+    }
+
+    @Override
+    public boolean hasCapture() {
+        return this.capture != null;
     }
 }

@@ -51,7 +51,7 @@ public class SetModifier
         if (refs.isEmpty()) {
             throw new JelException(
                 "cannot set value--undefined variable (not yet supported)")
-                .withSpans(this, this.path);
+                .withSpans(ctx, this, this.path);
         }
         final JsonValue v = exp.apply(ctx);
         for (int i = 0; i < refs.size(); i++) {

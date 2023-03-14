@@ -34,7 +34,7 @@ public class OperatorExpression
     }
 
     protected JsonValue calculate(final JelContext ctx, final Sequence<Sequence<?>>.Itr itr) throws JelException {
-        return this.calculate(ctx, itr, getNextValue(ctx, itr));
+        return this.calculate(ctx, itr, this.getNextValue(ctx, itr));
     }
 
     protected JsonValue calculate(
@@ -43,51 +43,52 @@ public class OperatorExpression
             final JsonValue first) throws JelException {
         JsonValue out = first;
         while (itr.hasNext()) {
-            out = apply(getNextOperator(itr), out, getNextValue(ctx, itr));
+            out = apply(this.getNextOperator(ctx, itr), out, this.getNextValue(ctx, itr));
         }
         return out;
     }
 
-    protected static JsonValue getNextValue(
+    protected JsonValue getNextValue(
             final JelContext ctx,
             final Sequence<Sequence<?>>.Itr itr) throws JelException {
         final Sequence<?> next = itr.next();
         if (next == null) {
-            throw new JelException("no values");
+            throw new JelException("no values")
+                .withSpan(ctx, this);
         }
         if (next instanceof ModifyingOperatorSequence) {
             final ModifyingOperatorSequence m = (ModifyingOperatorSequence) next;
             if (m.op != ModifyingOperator.INVERT) {
                 throw new JelException("Unsupported modifier in operator expression")
-                    .withSpan(m)
+                    .withSpan(ctx, m)
                     .withDetails("Hint: operator expression only supports '-' modifier");
             }
             final Sequence<?> after = itr.next();
             if (after == null) {
                 throw new JelException("missing number after sign")
-                    .withSpan(next);
+                    .withSpan(ctx, next);
             } else if (!(after instanceof Expression)) {
                 throw new JelException("Illegal operand")
-                    .withSpan(after);
+                    .withSpan(ctx, after);
             }
             return Json.value(-((Expression) after).applyAsNumber(ctx));
         }
         if (!(next instanceof Expression)) {
             throw new JelException("Illegal operand")
-                .withSpan(next);
+                .withSpan(ctx, next);
         }
         return ((Expression) next).apply(ctx);
     }
 
-    protected static Operator getNextOperator(
-            final Sequence<Sequence<?>>.Itr itr) throws JelException {
+    protected Operator getNextOperator(
+            final JelContext ctx, final Sequence<Sequence<?>>.Itr itr) throws JelException {
         // hasNext called by calculate
         final Sequence<?> next = itr.next();
         if (next instanceof OperatorSequence) {
             return ((OperatorSequence) next).op;
         }
         throw new JelException("not an operator")
-            .withSpan(next);
+            .withSpan(ctx, next);
     }
 
     private static JsonValue apply(

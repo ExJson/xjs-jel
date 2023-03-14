@@ -29,7 +29,7 @@ public class RaiseModifier
             final JelContext ctx, final Expression exp) throws JelException {
         final JsonValue v = exp.apply(ctx);
         if (!v.isObject()) {
-            throw new JelException(format(v)).withSpan(this);
+            throw new JelException(format(v)).withSpan(ctx, this);
         }
         final JsonObject o = v.asObject();
         final String msg = o.getOptional("msg", RaiseModifier::format).orElse("");
@@ -55,7 +55,7 @@ public class RaiseModifier
         } else {
             details = null;
         }
-        JelException e = new JelException(msg).withSpan(this);
+        JelException e = new JelException(msg).withSpan(ctx, this);
         if (details != null) {
             e = e.withDetails(details);
         }

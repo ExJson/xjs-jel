@@ -3,6 +3,7 @@ package xjs.jel.destructure;
 import org.junit.jupiter.api.Test;
 import xjs.core.Json;
 import xjs.core.JsonObject;
+import xjs.jel.JelContext;
 import xjs.jel.JelFlags;
 import xjs.jel.destructuring.DestructurePattern;
 import xjs.jel.destructuring.KeyPattern;
@@ -32,7 +33,7 @@ public final class ObjectDestructurePatternTest {
         final DestructurePattern pattern =
             pattern(key("a"), key("c"));
 
-        pattern.destructure(from, into);
+        pattern.destructure(JelContext.GLOBAL_CONTEXT, from, into);
         assertEquals(expected, into);
     }
 
@@ -50,7 +51,7 @@ public final class ObjectDestructurePatternTest {
         final DestructurePattern pattern =
             pattern(key("x", "a"), key("y", "b"), key("z", "c"));
 
-        pattern.destructure(from, into);
+        pattern.destructure(JelContext.GLOBAL_CONTEXT, from, into);
         assertEquals(expected, into);
     }
 
@@ -62,7 +63,7 @@ public final class ObjectDestructurePatternTest {
             pattern(key("a"));
 
         assertThrows(JelException.class, () ->
-            pattern.destructure(from, Json.object()));
+            pattern.destructure(JelContext.GLOBAL_CONTEXT, from, Json.object()));
     }
 
     private static KeyPattern key(final String key) {

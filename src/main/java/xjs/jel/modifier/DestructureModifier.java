@@ -30,12 +30,12 @@ public class DestructureModifier
         if (member.getAlias().aliasType() != AliasType.DESTRUCTURE) {
             throw new JelException(
                 "Cannot destructure--alias was expanded by another modifier")
-                .withSpan(this);
+                .withSpan(ctx, this);
         }
         final JsonValue v = checkValue(ctx, member.getExpression());
         final DestructurePattern pattern = member.getAlias().pattern();
         final JelObject o = new JelObject();
-        pattern.destructure(v.asContainer(), o);
+        pattern.destructure(ctx, v.asContainer(), o);
         return membersOf(o);
     }
 
@@ -69,7 +69,7 @@ public class DestructureModifier
     public Expression modify(final Expression expression) {
         return ctx -> {
             throw new JelException("Cannot capture destructuring modifier")
-                .withSpan(this);
+                .withSpan(ctx, this);
         };
     }
 

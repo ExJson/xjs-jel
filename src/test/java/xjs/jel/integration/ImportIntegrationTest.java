@@ -92,6 +92,29 @@ public final class ImportIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void import_whenTemplateThrowsException_correctlyHandlesScope() {
+        this.inputFailure("""
+            >> import: scoped_errors.xjs
+            >>: $scoped_throw()
+            """);
+        this.outputExactly("""
+            JelException: demo error
+            ---------------------------------------------------
+                1 | >>: $scoped_throw()
+                         ^^^^^^^^^^^^^^
+            ---------------------------------------------------
+            In file: templates.xjs
+            ---------------------------------------------------
+                2 | throw >> () raise: 'demo error'
+                                ^^^^^
+            ---------------------------------------------------
+            In file: scoped_errors.xjs
+            ---------------------------------------------------
+                1 | scoped_throw >> () : $throw()
+                                          ^^^^^^^""");
+    }
+
+    @Test
     public void import_withSyntaxErrors_throwsException() {
         this.inputFailure("""
             >> import: syntax_errors.xjs

@@ -12,6 +12,7 @@ import xjs.jel.scope.Scope;
 import xjs.jel.sequence.Sequence;
 import xjs.jel.serialization.sequence.Sequencer;
 import xjs.serialization.JsonContext;
+import xjs.serialization.token.ContainerToken;
 import xjs.serialization.token.TokenStream;
 import xjs.serialization.token.TokenType;
 import xjs.serialization.token.Tokenizer;
@@ -32,11 +33,8 @@ import java.util.logging.Logger;
 public class JelContext {
     public static final JelContext GLOBAL_CONTEXT =
         new JelContext(new File("/"));
-    private static final JsonValue ERRED_VALUE =
-        JsonLiteral.jsonNull();
 
-    private final Map<String, JsonValue> fileMap;
-    private final Map<String, JelException> errorMap;
+    private final Map<String, Output> outputMap;
     private final Stack<Scope> scopeStack;
     private final Stack<JsonContainer> parentStack;
     private final Set<String> inProgress;
@@ -58,8 +56,7 @@ public class JelContext {
 
     public JelContext(
             final @Nullable File root, final @Nullable Logger log) {
-        this.fileMap = new HashMap<>();
-        this.errorMap = new HashMap<>();
+        this.outputMap = new HashMap<>();
         this.scopeStack = new Stack<>();
         this.parentStack = new Stack<>();
         this.inProgress = new HashSet<>();
@@ -142,12 +139,12 @@ public class JelContext {
         }
     }
 
-    public void pushCapture(final Scope capture) {
+    public void pushScope(final Scope capture) {
         this.scopeStack.add(this.scope);
         this.scope = capture;
     }
 
-    public void dropCapture() {
+    public void dropScope() {
         this.scope = this.scopeStack.pop();
     }
 
@@ -193,9 +190,28 @@ public class JelContext {
         return this.parentStack.firstElement();
     }
 
+    public Sequence<?> parse(
+            final String path, final ContainerToken tokens) throws JelException {
+        try {
+            return this.sequencer.parse(tokens);
+        } catch (final JelException e) {
+            throw e.remapSpans(path);
+        }
+    }
+
     public JsonValue eval(final Sequence<?> sequence) throws JelException {
+        return this.eval(null, sequence);
+    }
+
+    public JsonValue eval(
+            final @Nullable String path, final Sequence<?> sequence) throws JelException {
         if (sequence instanceof Expression) {
-            return ((Expression) sequence).apply(this);
+            this.pushScope(new Scope(path));
+            try {
+                return ((Expression) sequence).apply(this);
+            } finally {
+                this.dropScope();
+            }
         }
         throw new JelException("not an expression").withSpan(sequence);
     }
@@ -210,14 +226,13 @@ public class JelContext {
         if (file == null) {
             throw new JelException("File not found: " + path);
         }
-        final JsonValue out = this.getOrLoadFile(file);
+        final Output out = this.getOrLoadFile(file);
         if (out == null) {
             throw new IllegalStateException("out");
-        } else if (out == ERRED_VALUE) {
-            final JelException e = this.errorMap.get(file.getAbsolutePath());
-            throw new JelException("Dependency not loaded: " + path, e);
+        } else if (out.isError()) {
+            throw new JelException("Dependency not loaded: " + path, out.getThrown());
         }
-        return out;
+        return out.getValue();
     }
 
     private @Nullable File resolveFile(final String path) {
@@ -246,7 +261,7 @@ public class JelContext {
 
     private @Nullable File fileInRoot(final String path) {
         final File relative = new File(this.root, path);
-        if (this.fileMap.containsKey(relative.getAbsolutePath())) {
+        if (this.outputMap.containsKey(relative.getAbsolutePath())) {
             return relative; // added manually
         }
         if (relative.exists() && relative.isFile()) {
@@ -256,71 +271,87 @@ public class JelContext {
     }
 
     public @Nullable JsonValue getOutput(final File file) {
-        final JsonValue out = this.getOrLoadFile(file);
-        if (out == ERRED_VALUE) {
-            return null;
+        final Output out = this.getOrLoadFile(file);
+        if (out != null) {
+            return out.getValue();
         }
-        return out;
+        return null;
     }
 
-    private JsonValue getOrLoadFile(final File file) {
+    private Output getOrLoadFile(final File file) {
         final String path = file.getAbsolutePath();
-        JsonValue value = this.fileMap.get(path);
-        if (value != null) {
-            return value;
+        Output output = this.outputMap.get(path);
+        if (output != null) {
+            return output;
         }
-        value = this.loadFile(file);
-        this.fileMap.put(path, value);
-        return value;
+        output = this.loadFile(file);
+        this.outputMap.put(path, output);
+        return output;
     }
 
-    public JsonValue loadFile(final File file) {
+    public Output loadFile(final File file) {
         final String path = file.getAbsolutePath();
         // for now, jel is only parsed in xjs files.
         if (!file.getName().endsWith(".xjs")) {
-            return this.parseNonXjs(file, path);
+            return this.parseNonXjs(file);
         }
         if (!this.inProgress.add(path)) {
             throw new IllegalStateException("Unhandled cyclical reference: " + file);
         }
         this.filesInProgress.push(file);
         PositionTrackingReader reader = null;
+        JsonValue value = null;
+        JelException thrown = null;
         try (final FileInputStream fis = new FileInputStream(file)) {
             reader = PositionTrackingReader.fromIs(fis, true);
             final TokenStream stream =
                 new TokenStream(new Tokenizer(reader), TokenType.OPEN);
-            final JsonValue out = this.eval(
-                this.sequencer.parse(Tokenizer.containerize(stream)));
-            this.inProgress.remove(path);
-            return out;
+            final ContainerToken tokens =
+                Tokenizer.containerize(stream);
+            value = this.eval(path, this.parse(path, tokens));
         } catch (final IOException e) {
-            this.errorMap.put(path, new JelException("Cannot read file", e));
+            thrown = new JelException("Cannot read file", e);
         } catch (final SyntaxException e) {
             if (reader == null) {
                 throw new IllegalStateException("unreachable");
             }
-            this.errorMap.put(path,
-                JelException.fromSyntaxException(reader.getFullText().toString(), e));
+            thrown = JelException.fromSyntaxException(reader.getFullText().toString(), e);
         } catch (final JelException e) {
-            this.errorMap.put(path, e);
+            thrown = e;
         }
         this.inProgress.remove(path);
-        return ERRED_VALUE;
+        final String fullText = reader != null ? reader.getFullText().toString() : null;
+        return new Output(value, thrown, fullText);
     }
 
-    private JsonValue parseNonXjs(final File f, final String path) {
+    private Output parseNonXjs(final File f) {
+        JsonValue value = null;
+        JelException thrown = null;
         try {
-            return JsonContext.autoParse(f);
+            value = JsonContext.autoParse(f);
         } catch (final IOException e) {
-            this.errorMap.put(path, new JelException("Cannot read file", e));
+            thrown = new JelException("Cannot read file", e);
         } catch (final SyntaxException e) {
-            this.errorMap.put(path, new JelException("File contains syntax errors", e));
+            thrown = new JelException("File contains syntax errors", e);
         }
-        return ERRED_VALUE;
+        return new Output(value, thrown, null);
     }
 
     public void addOutput(final File file, final JsonValue value) {
-        this.fileMap.put(file.getAbsolutePath(), value);
+        this.outputMap.put(file.getAbsolutePath(), new Output(value, null, null));
+    }
+
+    public String getRelativePath(final String path) {
+        final String rootPath = this.root.getAbsolutePath();
+        if (path.startsWith(rootPath)) {
+            return path.substring(rootPath.length() + 1).replace("\\", "/");
+        }
+        return new File(path).getName();
+    }
+
+    public @Nullable String getFullText(final String absolutePath) {
+        final Output output = this.outputMap.get(absolutePath);
+        return output != null ? output.getFullText() : null;
     }
 
     public @Nullable JelException getError(final String path) {
@@ -331,8 +362,9 @@ public class JelContext {
         return this.getError(f);
     }
 
-    public JelException getError(final File file) {
-        return this.errorMap.get(file.getAbsolutePath());
+    public @Nullable JelException getError(final File file) {
+        final Output output = this.outputMap.get(file.getAbsolutePath());
+        return output != null ? output.getThrown() : null;
     }
 
     public void log(final String s) {
@@ -375,9 +407,40 @@ public class JelContext {
     }
 
     public void dispose() {
-        this.fileMap.clear();
-        this.errorMap.clear();
+        this.outputMap.clear();
         this.scopeStack.clear();
         this.scope.dispose();
+    }
+
+    public static class Output {
+        private final JsonValue value;
+        private final JelException thrown;
+        private final String fullText;
+
+        private Output(
+                final JsonValue value, final JelException thrown, final String fullText) {
+            this.value = value;
+            this.thrown = thrown;
+            this.fullText = fullText;
+        }
+
+        public boolean isError() {
+            return this.value == null;
+        }
+
+        // null if error thrown
+        public @Nullable JsonValue getValue() {
+            return this.value;
+        }
+
+        // null if no error thrown
+        public @Nullable JelException getThrown() {
+            return this.thrown;
+        }
+
+        // will eventually be null if no error can be thrown
+        public @Nullable String getFullText() {
+            return this.fullText;
+        }
     }
 }

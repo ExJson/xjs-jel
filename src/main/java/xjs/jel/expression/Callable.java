@@ -25,4 +25,8 @@ public interface Callable extends Expression {
     }
 
     default void setCapture(final Scope scope) {}
+
+    default boolean hasCapture() {
+        return false;
+    }
 }

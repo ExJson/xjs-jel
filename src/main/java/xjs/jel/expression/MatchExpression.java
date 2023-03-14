@@ -36,18 +36,18 @@ public class MatchExpression extends ConditionalExpression {
                 } else if (processed.size() == 1) {
                     if (processed.get(0) instanceof Callable) {
                         throw new JelException("Cannot return template from conditional expression")
-                            .withSpan(this)
+                            .withSpan(ctx, this)
                             .withDetails("No way to capture expression as value");
                     }
                     return processed.get(0).getValue(ctx);
                 }
                 throw new JelException("Unsure how to handle multi-member output in match--unreachable?")
-                    .withSpan(this)
+                    .withSpan(ctx, this)
                     .withDetails("Feature is still in design");
             }
             if (ctx.isStrictPathing()) {
                 throw new JelException("No condition matched. Missing default case?")
-                    .withSpan(this)
+                    .withSpan(ctx, this)
                     .withDetails("Hint: this application disallows lenient pathing");
             }
         }

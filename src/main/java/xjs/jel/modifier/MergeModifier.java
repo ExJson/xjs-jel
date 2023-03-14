@@ -35,13 +35,13 @@ public class MergeModifier
                 && member.getAlias().aliasType() != AliasType.REFERENCE) {
             throw new JelException(
                 "cannot merge values--alias was expanded by another modifier")
-                .withSpan(this);
+                .withSpan(ctx, this);
         }
         if (member.getAlias() != null) {
             this.doMerge(ctx, member.getExpression());
             return Collections.emptyList();
         }
-        final JsonObject in = this.checkObject(member.getExpression().apply(ctx));
+        final JsonObject in = this.checkObject(ctx, member.getExpression().apply(ctx));
         final List<JelMember> out = new ArrayList<>();
         for (final JsonObject.Member m : in) {
             out.add(JelMember.of(m.getKey(), m.getOnly()));
@@ -59,8 +59,8 @@ public class MergeModifier
 
     private void doMerge(
             final JelContext ctx, final Expression exp) throws JelException {
-        final JsonObject source = this.checkObject(this.getSource(ctx));
-        final JsonObject in = this.checkObject(exp.apply(ctx));
+        final JsonObject source = this.checkObject(ctx, this.getSource(ctx));
+        final JsonObject in = this.checkObject(ctx, exp.apply(ctx));
         for (final JsonObject.Member m : in) {
             final JsonValue v = m.getValue().deepCopy();
             v.addFlag(JelFlags.MERGE);
@@ -75,10 +75,10 @@ public class MergeModifier
         return ctx.getParent();
     }
 
-    private JsonObject checkObject(final JsonValue value) throws JelException {
+    private JsonObject checkObject(final JelContext ctx, final JsonValue value) throws JelException {
         if (!value.isObject()) {
             throw new JelException("Cannot merge values--not an object")
-                .withSpan(this)
+                .withSpan(ctx, this)
                 .withDetails(value.toString());
         }
         return value.asObject();

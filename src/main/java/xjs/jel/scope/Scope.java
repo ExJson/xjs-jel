@@ -1,5 +1,6 @@
 package xjs.jel.scope;
 
+import org.jetbrains.annotations.Nullable;
 import xjs.core.JsonArray;
 import xjs.core.JsonReference;
 import xjs.jel.lang.JelObject;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Stack;
 
 public final class Scope implements ReferenceAccessor {
+    private final @Nullable String filePath;
     private final Stack<JsonArray> indexStack;
     private final JelObject map;
     private final Stack<Frame> frames;
@@ -17,7 +19,12 @@ public final class Scope implements ReferenceAccessor {
     private Frame frame;
 
     public Scope() {
+        this(null);
+    }
+
+    public Scope(final String filePath) {
         this(
+            filePath,
             new Stack<>(),
             new JelObject(),
             new Stack<>(),
@@ -26,16 +33,22 @@ public final class Scope implements ReferenceAccessor {
     }
 
     private Scope(
+            final @Nullable String filePath,
             final Stack<JsonArray> indexStack,
             final JelObject map,
             final Stack<Frame> frames,
             final Frame frame,
             final JsonArray byIndex) {
+        this.filePath = filePath;
         this.indexStack = indexStack;
         this.map = map;
         this.frames = frames;
         this.byIndex = byIndex;
         this.frame = frame;
+    }
+
+    public @Nullable String getFilePath() {
+        return this.filePath;
     }
 
     public void pushFrame() {
@@ -52,7 +65,7 @@ public final class Scope implements ReferenceAccessor {
     }
 
     public void addCallable(final String key, final Callable callable) {
-        if (callable.capturesScope()) {
+        if (callable.capturesScope() && !callable.hasCapture()) {
             callable.setCapture(this.capture());
         }
         this.map.addCallable(key, callable);
@@ -95,6 +108,7 @@ public final class Scope implements ReferenceAccessor {
 
     public Scope capture() {
         return new Scope(
+            this.filePath,
             this.copyIndexStack(),
             this.copyMap(),
             this.copyFrames(),

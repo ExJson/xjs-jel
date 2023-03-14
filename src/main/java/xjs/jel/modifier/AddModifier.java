@@ -34,7 +34,7 @@ public class AddModifier
         if (member.getAlias().aliasType() != AliasType.REFERENCE) {
             throw new JelException(
                 "cannot insert value--alias was expanded by another modifier")
-                .withSpan(this);
+                .withSpan(ctx, this);
         }
         this.doAdd(ctx, member.getExpression());
         return Collections.emptyList();

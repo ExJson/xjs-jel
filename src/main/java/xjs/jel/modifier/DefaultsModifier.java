@@ -22,16 +22,16 @@ public class DefaultsModifier
             final JsonValue defaults = this.path.get(ctx);
             if (!defaults.isObject()) {
                 throw new JelException("Cannot copy defaults from non-object value")
-                    .withSpan(this.path)
+                    .withSpan(ctx, this.path)
                     .withDetails("Cannot copy from: " + defaults);
             }
             final JsonValue out = expression.apply(ctx);
             if (!out.isObject()) {
                 JelException e = new JelException("Cannot copy defaults into non-object value")
-                    .withSpan(this.path)
+                    .withSpan(ctx, this.path)
                     .withDetails("Cannot copy: " + defaults);
                 if (expression instanceof Span<?>) {
-                    e = e.withSpan((Span<?>) expression);
+                    e = e.withSpan(ctx, (Span<?>) expression);
                 }
                 throw e;
             }

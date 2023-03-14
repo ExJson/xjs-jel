@@ -38,46 +38,46 @@ public class ArithmeticExpression extends OperatorExpression {
         double out = first.intoDouble();
         while (itr.hasNext()) {
             out = applyAsNumber(
-                itr, getNextOperator(itr), out, getNextNumber(ctx, itr));
+                ctx, itr, this.getNextOperator(ctx, itr), out, this.getNextNumber(ctx, itr));
         }
         return Json.value(out);
     }
 
-    protected static double getNextNumber(
+    protected double getNextNumber(
             final JelContext ctx,
             final Sequence<Sequence<?>>.Itr itr) throws JelException {
         final Sequence<?> next = itr.next();
         if (next == null) {
-            throw new JelException("no numbers");
+            throw new JelException("no numbers").withSpan(ctx, this);
         }
         if (next instanceof ModifyingOperatorSequence) {
             final ModifyingOperatorSequence m = (ModifyingOperatorSequence) next;
             if (m.op != ModifyingOperator.INVERT) {
                 throw new JelException("Unsupported modifier in arithmetic expression")
-                    .withSpan(m)
+                    .withSpan(ctx, m)
                     .withDetails("Hint: arithmetic expression only supports '-' modifier");
             }
             final Sequence<?> after = itr.next();
             if (after == null) {
                 throw new JelException("missing number after sign")
-                    .withSpan(next);
+                    .withSpan(ctx, next);
             } else if (!(after instanceof Expression)) {
                 throw new JelException("Illegal operand")
-                    .withSpan(after);
+                    .withSpan(ctx, after);
             }
-            return checkPrecedent(ctx, itr, -((Expression) after).applyAsNumber(ctx));
+            return this.checkPrecedent(ctx, itr, -((Expression) after).applyAsNumber(ctx));
         }
-        return checkPrecedent(ctx, itr, ((Expression) next).applyAsNumber(ctx));
+        return this.checkPrecedent(ctx, itr, ((Expression) next).applyAsNumber(ctx));
     }
 
-    private static double checkPrecedent(
+    private double checkPrecedent(
             final JelContext ctx,
             final Sequence<Sequence<?>>.Itr itr, final double control) throws JelException {
         final Sequence<?> peek = itr.peek();
         if (peek instanceof ArithmeticExpression) {
             itr.next(); // may be unreachable due to parsing (phantom * is inserted)
             return applyAsNumber(
-                itr, Operator.MULTIPLY, control, ((Expression) peek).applyAsNumber(ctx));
+                ctx, itr, Operator.MULTIPLY, control, ((Expression) peek).applyAsNumber(ctx));
         } else if (peek instanceof OperatorSequence) {
             final Operator op = ((OperatorSequence) peek).op;
             if (op != Operator.ADD
@@ -85,13 +85,14 @@ public class ArithmeticExpression extends OperatorExpression {
                     && op != Operator.RIGHT_SHIFT
                     && op != Operator.LEFT_SHIFT) {
                 itr.next();
-                return applyAsNumber(itr, op, control, getNextNumber(ctx, itr));
+                return applyAsNumber(ctx, itr, op, control, this.getNextNumber(ctx, itr));
             }
         }
         return control;
     }
 
     protected static double applyAsNumber(
+            final JelContext ctx,
             final Sequence<Sequence<?>>.Itr itr,
             final Operator op,
             final double a,
@@ -100,8 +101,8 @@ public class ArithmeticExpression extends OperatorExpression {
             case ADD: return a + b;
             case SUBTRACT: return a - b;
             case MULTIPLY: return a * b;
-            case DIVIDE: return a / checkDivideByZero(b, itr);
-            case MOD: return a % checkDivideByZero(b, itr);
+            case DIVIDE: return a / checkDivideByZero(ctx, b, itr);
+            case MOD: return a % checkDivideByZero(ctx, b, itr);
             case POW: return Math.pow(a, b);
             case BITWISE_AND: return (int) a & (int) b;
             case BITWISE_OR: return (int) a | (int) b;
@@ -113,11 +114,11 @@ public class ArithmeticExpression extends OperatorExpression {
     }
 
     protected static double checkDivideByZero(
-            final double b, final Sequence<Sequence<?>>.Itr itr) throws JelException {
+            final JelContext ctx, final double b, final Sequence<Sequence<?>>.Itr itr) throws JelException {
         if (b == 0) {
             final Sequence<?> bs = itr.peek(0);
             throw new JelException("Expression divides by zero")
-                .withSpan(bs);
+                .withSpan(ctx, bs);
         }
         return b;
     }
