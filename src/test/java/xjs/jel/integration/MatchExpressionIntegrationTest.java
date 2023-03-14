@@ -45,15 +45,15 @@ public final class MatchExpressionIntegrationTest extends AbstractIntegrationTes
         this.outputExactly("""
             JelException: No condition matched. Missing default case?
             ---------------------------------------------------------
-                0 | a >> match $(101): {
+                1 | a >> match $(101): {
                                        ^
-                1 |   123: null
+                2 |   123: null
                     ^^^^^^^^^^^
-                2 |   456: value
+                3 |   456: value
                     ^^^^^^^^^^^^
-                3 |   789: null
+                4 |   789: null
                     ^^^^^^^^^^^
-                4 | }
+                5 | }
                     ^
             ---------------------------------------------------------
             Hint: this application disallows lenient pathing""");

@@ -42,16 +42,16 @@ public final class TemplateExpressionIntegrationTest extends AbstractIntegration
         this.outputExactly("""
             JelException: no unit provided
             ---------------------------------------------------
-                5 |   _ >> raise: {
+                6 |   _ >> raise: {
                            ^^^^^
-                6 |     msg >> if: {
-                7 |       $n.matches(\\d+): no unit provided
-                8 |       _: unknown unit: $n.replace(^\\d+,,)
-                9 |     }
-               10 |     details: must be one of: [ s, m, h, y ]
-               11 |   }
-               12 | }
-               13 | a: $time(30)
+                7 |     msg >> if: {
+                8 |       $n.matches(\\d+): no unit provided
+                9 |       _: unknown unit: $n.replace(^\\d+,,)
+               10 |     }
+               11 |     details: must be one of: [ s, m, h, y ]
+               12 |   }
+               13 | }
+               14 | a: $time(30)
                         ^^^^^^^^
             ---------------------------------------------------
             must be one of: [ s, m, h, y ]""");
@@ -65,16 +65,16 @@ public final class TemplateExpressionIntegrationTest extends AbstractIntegration
         this.outputExactly("""
             JelException: unknown unit: j
             ---------------------------------------------------
-                5 |   _ >> raise: {
+                6 |   _ >> raise: {
                            ^^^^^
-                6 |     msg >> if: {
-                7 |       $n.matches(\\d+): no unit provided
-                8 |       _: unknown unit: $n.replace(^\\d+,,)
-                9 |     }
-               10 |     details: must be one of: [ s, m, h, y ]
-               11 |   }
-               12 | }
-               13 | a: $time(15j)
+                7 |     msg >> if: {
+                8 |       $n.matches(\\d+): no unit provided
+                9 |       _: unknown unit: $n.replace(^\\d+,,)
+               10 |     }
+               11 |     details: must be one of: [ s, m, h, y ]
+               12 |   }
+               13 | }
+               14 | a: $time(15j)
                         ^^^^^^^^^
             ---------------------------------------------------
             must be one of: [ s, m, h, y ]""");

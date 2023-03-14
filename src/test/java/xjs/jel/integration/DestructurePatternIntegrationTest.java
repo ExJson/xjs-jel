@@ -54,7 +54,7 @@ public final class DestructurePatternIntegrationTest extends AbstractIntegration
         this.outputExactly("""
             JelException: Cannot destructure array as object
             ---------------------------------------------------
-                0 | { a } >> from: [ 1 ]
+                1 | { a } >> from: [ 1 ]
                     ^^^^^
             ---------------------------------------------------
             Cannot destructure: [1]""");

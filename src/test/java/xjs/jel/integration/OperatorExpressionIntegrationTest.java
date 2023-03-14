@@ -62,7 +62,7 @@ public final class OperatorExpressionIntegrationTest extends AbstractIntegration
         this.outputExactly("""
             JelException: Expression divides by zero
             ---------------------------------------------------
-                0 | a: 1 % 0
+                1 | a: 1 % 0
                            ^""");
     }
 }

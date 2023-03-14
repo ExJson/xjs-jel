@@ -72,7 +72,7 @@ public final class DestructureParserTest {
         final String message = """
             JelException: Illegal identifier
             ---------------------------------------------------
-                0 | { a , % b }
+                1 | { a , % b }
                           ^
             ---------------------------------------------------
             Hint: should match the following syntax: { k: r }""";
@@ -87,7 +87,7 @@ public final class DestructureParserTest {
         final String message = """
             JelException: Expected source identifier
             ---------------------------------------------------
-                0 | { key: }
+                1 | { key: }
                          ^
             ---------------------------------------------------
             Hint: should match the following syntax: { k: r }""";
@@ -102,7 +102,7 @@ public final class DestructureParserTest {
         final String message = """
             JelException: Illegal source identifier
             ---------------------------------------------------
-                0 | { key: 1234 }
+                1 | { key: 1234 }
                            ^^^^
             ---------------------------------------------------
             Hint: should match the following syntax: { k: r }""";
@@ -178,7 +178,7 @@ public final class DestructureParserTest {
         final String message = """
             JelException: Illegal operator
             ----------------------------------------------------
-                0 | [ a . b ]
+                1 | [ a . b ]
                         ^
             ----------------------------------------------------
             Hint: should match the following pattern: [ a .. b ]""";
@@ -193,7 +193,7 @@ public final class DestructureParserTest {
         final String message = """
             JelException: Redundant operator
             ----------------------------------------------------
-                0 | [ a .. b .. c ]
+                1 | [ a .. b .. c ]
                              ^^
             ----------------------------------------------------
             Hint: should match the following pattern: [ a .. b ]""";
@@ -208,7 +208,7 @@ public final class DestructureParserTest {
         final String message = """
             JelException: Expected identifier, nested pattern, or '..'
             ----------------------------------------------------------
-                0 | [ a, 1234, c ]
+                1 | [ a, 1234, c ]
                          ^^^^
             ----------------------------------------------------------
             Hint: should be one of: [ a, [b], {c}, .. d ]""";

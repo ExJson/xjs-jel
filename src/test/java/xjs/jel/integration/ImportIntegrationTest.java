@@ -100,17 +100,17 @@ public final class ImportIntegrationTest extends AbstractIntegrationTest {
         this.outputExactly("""
             JelException: demo error
             ---------------------------------------------------
-                1 | >>: $scoped_throw()
+                2 | >>: $scoped_throw()
                          ^^^^^^^^^^^^^^
             ---------------------------------------------------
             In file: templates.xjs
             ---------------------------------------------------
-                2 | throw >> () raise: 'demo error'
+                3 | throw >> () raise: 'demo error'
                                 ^^^^^
             ---------------------------------------------------
             In file: scoped_errors.xjs
             ---------------------------------------------------
-                1 | scoped_throw >> () : $throw()
+                2 | scoped_throw >> () : $throw()
                                           ^^^^^^^""");
     }
 

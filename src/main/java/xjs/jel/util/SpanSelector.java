@@ -84,7 +84,7 @@ public final class SpanSelector {
     }
 
     private static void addLineNumber(final StringBuilder sb, final int n) {
-        final String sn = String.valueOf(n);
+        final String sn = String.valueOf(n + 1);
         final int spaces = NUM_LENGTH - sn.length();
         for (int i = 0; i < spaces; i++) {
             sb.append(' ');

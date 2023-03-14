@@ -162,7 +162,7 @@ public final class JsonPathIntegrationTest extends AbstractIntegrationTest {
         this.outputExactly("""
             JelException: Path does not resolve to any variable
             -----------------------------------------------------
-                3 | c: $x.y
+                4 | c: $x.y
                        ^^^^
             -----------------------------------------------------
             Application is configured to disallow lenient pathing""");

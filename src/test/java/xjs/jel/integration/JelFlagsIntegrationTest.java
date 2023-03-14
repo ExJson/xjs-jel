@@ -47,7 +47,7 @@ public final class JelFlagsIntegrationTest extends AbstractIntegrationTest {
         this.outputExactly("""
             JelException: Path does not resolve to any variable
             -----------------------------------------------------
-                3 | c: $a.b
+                4 | c: $a.b
                        ^^^^
             -----------------------------------------------------
             Application is configured to disallow lenient pathing""");

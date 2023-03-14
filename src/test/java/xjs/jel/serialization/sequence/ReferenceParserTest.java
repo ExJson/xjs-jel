@@ -156,7 +156,7 @@ public final class ReferenceParserTest {
         final String message = """
             JelException: Empty index component
             ---------------------------------------------------
-                0 | $[]
+                1 | $[]
                      ^^
             ---------------------------------------------------
             Hint: should be an index or index range component""";
@@ -171,7 +171,7 @@ public final class ReferenceParserTest {
         final String message = """
             JelException: Unexpected tokens after index range
             --------------------------------------------------------------------
-                0 | $[1 &]
+                1 | $[1 &]
                         ^
             --------------------------------------------------------------------
             Hint: expression should be [s:e], where s and e are optional numbers""";
@@ -186,7 +186,7 @@ public final class ReferenceParserTest {
         final String message = """
             JelException: Redundant range operator
             --------------------------------------------------------------------
-                0 | $[1::2]
+                1 | $[1::2]
                        ^^
             --------------------------------------------------------------------
             Hint: expression should be [s:e], where s and e are optional numbers""";
@@ -240,7 +240,7 @@ public final class ReferenceParserTest {
         final String message = """
             JelException: expected key
             ------------------------------------------------------------------
-                0 | $one.
+                1 | $one.
                         ^
             ------------------------------------------------------------------
             Hint: the dot accessor indicates that a word or string will follow""";
@@ -255,7 +255,7 @@ public final class ReferenceParserTest {
         final String message = """
             JelException: expected key
             ------------------------------------------------------------------
-                0 | $one.@
+                1 | $one.@
                         ^
             ------------------------------------------------------------------
             Hint: the dot accessor indicates that a word or string will follow""";

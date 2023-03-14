@@ -13,7 +13,7 @@ public final class ElementParserIntegrationTest extends AbstractIntegrationTest 
         this.outputExactly("""
             JelException: illegal dangling tokens after expression
             -----------------------------------------------------------------------------------
-                1 | "this ain't legal"
+                2 | "this ain't legal"
                     ^^^^^^^^^^^^^^^^^^
             -----------------------------------------------------------------------------------
             Hint: objects and arrays may not have trailing tokens

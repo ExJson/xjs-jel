@@ -46,7 +46,7 @@ public final class DefaultValuesIntegrationTest extends AbstractIntegrationTest 
         this.outputExactly("""
             JelException: Cannot copy defaults from non-object value
             --------------------------------------------------------
-                1 | b >> $a: {}
+                2 | b >> $a: {}
                          ^^
             --------------------------------------------------------
             Cannot copy from: [1,2,3]""");
@@ -61,7 +61,7 @@ public final class DefaultValuesIntegrationTest extends AbstractIntegrationTest 
         this.outputExactly("""
             JelException: Cannot copy defaults into non-object value
             --------------------------------------------------------
-                1 | b >> $a: []
+                2 | b >> $a: []
                          ^^  ^^
             --------------------------------------------------------
             Cannot copy: {"x":1}""");

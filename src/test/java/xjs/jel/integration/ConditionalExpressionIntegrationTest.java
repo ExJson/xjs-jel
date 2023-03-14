@@ -67,13 +67,13 @@ public final class ConditionalExpressionIntegrationTest extends AbstractIntegrat
         this.outputExactly("""
             JelException: No condition matched. Missing default case?
             ---------------------------------------------------------
-                1 | b >> if: {
+                2 | b >> if: {
                              ^
-                2 |   $a < 50: value
+                3 |   $a < 50: value
                     ^^^^^^^^^^^^^^^^
-                3 |   $a < 100: value
+                4 |   $a < 100: value
                     ^^^^^^^^^^^^^^^^^
-                4 | }
+                5 | }
                     ^
             ---------------------------------------------------------
             Hint: this application disallows lenient pathing""");

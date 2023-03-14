@@ -24,7 +24,7 @@ public final class DelegateExpressionIntegrationTest extends AbstractIntegration
         this.outputExactly("""
             JelException: Callable not in scope: NotFound
             ---------------------------------------------------
-                0 | a >> @NotFound: null
+                1 | a >> @NotFound: null
                           ^^^^^^^^
             ---------------------------------------------------
             Expected a template or function named 'NotFound'""");
@@ -39,7 +39,7 @@ public final class DelegateExpressionIntegrationTest extends AbstractIntegration
         this.outputExactly("""
             IllegalJelArgsException: expected 2 arguments
             ---------------------------------------------------
-                1 | c >> @T: null
+                2 | c >> @T: null
                           ^""");
     }
 

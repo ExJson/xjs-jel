@@ -28,7 +28,7 @@ public final class SpanSelectorTest {
             8
             9""";
         final String expected = """
-                4 | test line
+                5 | test line
                     ^^^^ ^^^^
             """;
         final List<Span<?>> spans = List.of(
@@ -53,11 +53,11 @@ public final class SpanSelectorTest {
             8
             9""";
         final String expected = """
-                4 | a b c
+                5 | a b c
                     ^^^
-                5 | d e f
+                6 | d e f
                         ^
-                6 | g h i
+                7 | g h i
                     ^^^ ^
             """;
         final List<Span<?>> spans = List.of(
@@ -80,15 +80,15 @@ public final class SpanSelectorTest {
             yet another test: 5678,
             'okay': 'Im done now'""";
         final String expected = """
-                2 | test token: 'banana',
+                3 | test token: 'banana',
                                 ^^^^^^^^
-                3 | another 'test': apples,
+                4 | another 'test': apples,
                             ^^^^^^
-                4 | "here you go": '''test here''',
+                5 | "here you go": '''test here''',
                     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^
-                5 | and another test: 1234,
-                6 | yet another test: 5678,
-                7 | 'okay': 'Im done now'
+                6 | and another test: 1234,
+                7 | yet another test: 5678,
+                8 | 'okay': 'Im done now'
                     ^^^^^^  ^^^^^^^^^^^^^
             """;
         final List<Span<?>> spans =
@@ -111,11 +111,11 @@ public final class SpanSelectorTest {
               '''
             and another test: 1234""";
         final String expected = """
-                3 |   '''
+                4 |   '''
                       ^^^
-                4 |   test here
+                5 |   test here
                     ^^^^^^^^^^^
-                5 |   '''
+                6 |   '''
                     ^^^^^
             """;
         final List<Span<?>> spans =
