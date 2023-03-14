@@ -40,7 +40,6 @@ public class JelContext {
     private final Set<String> inProgress;
     private final Stack<File> filesInProgress;
     private final File root;
-    private final boolean isGlobal;
     private Sequencer sequencer;
     private @Nullable Logger log;
     private @Nullable JsonContainer parent;
@@ -62,13 +61,12 @@ public class JelContext {
         this.inProgress = new HashSet<>();
         this.filesInProgress = new Stack<>();
         this.root = root != null ? root : new File(System.getProperty("user.dir"));
-        this.isGlobal = this == GLOBAL_CONTEXT || isGlobal(root);
         this.sequencer = Sequencer.JEL;
         this.log = log;
         this.outputPrefix = true;
         this.scope = new Scope();
         this.privilege = Privilege.BASIC;
-        this.folderDepth = 8;
+        this.folderDepth = this == GLOBAL_CONTEXT || isGlobal(root) ? 1 : 8;
     }
 
     private static boolean isGlobal(final @Nullable File root) {
@@ -115,11 +113,7 @@ public class JelContext {
     }
 
     public void loadAll() {
-        if (this.isGlobal) {
-            this.loadRecursive(this.folderDepth, this.root);
-        } else {
-            this.loadRecursive(1, this.root);
-        }
+        this.loadRecursive(this.folderDepth, this.root);
     }
 
     private void loadRecursive(final int depth, final File dir) {
