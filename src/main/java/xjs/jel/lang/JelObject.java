@@ -194,7 +194,7 @@ public class JelObject extends JsonObject implements JelContainer {
     @Override
     public JelObject copy(final int options) {
         final List<String> declaredKeysCopy = new ArrayList<>(this.declaredKeys);
-        final List<JsonReference> declaredCopy = new ArrayList<>(this.declared);
+        final List<JsonReference> declaredCopy = copyReferences(this.declared, options);
         final List<String> visibleKeys = new ArrayList<>();
         final List<JsonReference> visible = new ArrayList<>();
 

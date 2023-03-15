@@ -92,7 +92,7 @@ public class JelArray extends JsonArray implements JelContainer {
 
     @Override
     public JelArray copy(final int options) {
-        final List<JsonReference> declaredCopy = new ArrayList<>(this.declared);
+        final List<JsonReference> declaredCopy = copyReferences(this.declared, options);
         final List<JsonReference> visible = new ArrayList<>();
 
         for (final JsonReference reference : declaredCopy) {

@@ -153,13 +153,15 @@ public class OperatorExpression
         if (lhs.isObject()) {
             final JsonArray a = new JsonArray();
             for (int i = 0; i < count; i++) {
-                a.add(rhs.deepCopy());
+                a.add(lhs.deepCopy());
             }
             return a;
         } else if (lhs.isArray()) {
             final JsonArray a = new JsonArray();
             for (int i = 0; i < count; i++) {
-                lhs.asArray().visitAll().forEach(a::add);
+                for (final JsonValue v : lhs.asArray().visitAll()) {
+                    a.add(v.deepCopy());
+                }
             }
             return a;
         } else if (lhs.isString()) {
