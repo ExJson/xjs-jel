@@ -151,15 +151,15 @@ public class OperatorExpression
     protected static JsonValue multiply(final JsonValue lhs, final JsonValue rhs) {
         final double count = rhs.intoDouble();
         if (lhs.isObject()) {
-            final JsonObject o = new JsonObject();
+            final JsonArray a = new JsonArray();
             for (int i = 0; i < count; i++) {
-                o.addAll(lhs.asObject());
+                a.add(rhs.deepCopy());
             }
-            return o;
+            return a;
         } else if (lhs.isArray()) {
             final JsonArray a = new JsonArray();
             for (int i = 0; i < count; i++) {
-                a.addAll(lhs.asArray());
+                lhs.asArray().visitAll().forEach(a::add);
             }
             return a;
         } else if (lhs.isString()) {
