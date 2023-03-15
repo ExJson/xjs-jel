@@ -74,7 +74,7 @@ public final class Scope implements ReferenceAccessor {
 
     @Override
     public JsonReference get(final String key) {
-        return this.map.getReference(key);
+        return this.map.getDeclaredReference(key);
     }
 
     @Override

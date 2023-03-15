@@ -1,6 +1,5 @@
 package xjs.jel.modifier;
 
-import xjs.core.JsonObject;
 import xjs.core.JsonValue;
 import xjs.jel.JelContext;
 import xjs.jel.JelMember;
@@ -8,13 +7,13 @@ import xjs.jel.destructuring.DestructurePattern;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.Expression;
 import xjs.jel.lang.JelObject;
+import xjs.jel.lang.JelReflection;
 import xjs.jel.sequence.AliasType;
 import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
 import xjs.serialization.Span;
 import xjs.serialization.token.Token;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DestructureModifier
@@ -36,7 +35,7 @@ public class DestructureModifier
         final DestructurePattern pattern = member.getAlias().pattern();
         final JelObject o = new JelObject();
         pattern.destructure(ctx, v.asContainer(), o);
-        return membersOf(o);
+        return JelReflection.jelMembers(o);
     }
 
     private static JsonValue checkValue(
@@ -51,18 +50,6 @@ public class DestructureModifier
             throw e;
         }
         return v;
-    }
-
-    private static List<JelMember> membersOf(final JsonObject o) {
-        final List<JelMember> members = new ArrayList<>();
-        for (final JsonObject.Member m : o) {
-            // todo: leaking access -- member does not track access
-            members.add(JelMember.of(m.getKey(), m.getOnly()));
-        }
-        if (o instanceof JelObject) {
-            members.addAll(((JelObject) o).getCallables());
-        }
-        return members;
     }
 
     @Override

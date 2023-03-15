@@ -4,10 +4,10 @@ import xjs.core.JsonContainer;
 import xjs.core.JsonObject;
 import xjs.core.JsonReference;
 import xjs.jel.JelContext;
-import xjs.jel.JelFlags;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.Callable;
 import xjs.jel.lang.JelObject;
+import xjs.jel.lang.JelReflection;
 import xjs.jel.sequence.JelType;
 import xjs.serialization.Span;
 import xjs.serialization.token.ContainerToken;
@@ -31,9 +31,8 @@ public class ObjectDestructurePattern extends DestructurePattern {
             throw this.error(ctx, "Cannot destructure array as object", from);
         }
         for (final KeyPattern key : this.keys) {
-            final JsonReference ref = from.asObject().getReference(key.source);
+            final JsonReference ref = JelReflection.getReference(from.asObject(), key.source);
             if (ref != null) {
-                this.checkImport(ctx, ref, key, from);
                 into.addReference(key.key, ref);
             } else if (from instanceof JelObject && into instanceof JelObject) {
                 final Callable c = ((JelObject) from).getCallable(key.source);
@@ -41,15 +40,6 @@ public class ObjectDestructurePattern extends DestructurePattern {
                     ((JelObject) into).addCallable(key.key, c);
                 }
             }
-        }
-    }
-
-    protected void checkImport(
-            final JelContext ctx, final JsonReference ref,
-            final KeyPattern pattern, final JsonContainer from) throws JelException {
-        if (ref.getOnly().hasFlag(JelFlags.PRIVATE)) {
-            throw this.error(
-                ctx, "Key has private access: " + pattern.source, pattern, from);
         }
     }
 

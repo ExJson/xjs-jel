@@ -311,8 +311,17 @@ public final class JelFunctions {
     public static Expression find(
             final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
         requireArgs(1, 1, args);
+        if (args[0] instanceof CallableFacade) {
+            final Callable c = ((CallableFacade) args[0]).getWrapped();
+            for (final JsonReference r : self.intoArray().references()) {
+                if (c.call(self, ctx, r.getOnly()).apply(ctx).intoBoolean()) {
+                    return of(r.get());
+                }
+            }
+            return ofNull();
+        }
         if (!args[0].isObject()) {
-            throw new JelException("find: argument must be an object, called on an array");
+            throw new JelException("find: argument must be an object or callable, called on an array");
         }
         final JsonObject matcher = args[0].asObject();
         for (final JsonReference r : self.intoArray().references()) {

@@ -8,6 +8,8 @@ import xjs.serialization.Span;
 
 @FunctionalInterface
 public interface Callable extends Expression {
+
+    // todo: callable can return callable facade if needed now, removing need to eval expression ots
     Expression call(
         final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException;
 

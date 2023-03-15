@@ -7,6 +7,7 @@ import xjs.core.JsonValue;
 import xjs.jel.JelContext;
 import xjs.jel.JelFlags;
 import xjs.jel.exception.JelException;
+import xjs.jel.lang.JelReflection;
 import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
 import xjs.serialization.Span;
@@ -38,10 +39,11 @@ public class ArrayDestructurePattern extends DestructurePattern {
             }
             this.copy(ctx, from, into, i, this.beginning.get(i));
         }
-        final int s = Math.max(0, this.end.size() - from.size());
+        final int len = JelReflection.getSize(from);
+        final int s = Math.max(0, this.end.size() - len);
         for (int i = s; i < this.end.size(); i++) {
             final int inv = this.end.size() - i;
-            final int idx = wrapIndex(from.size(), from.size() - inv);
+            final int idx = wrapIndex(from.size(), len - inv);
             if (idx < 0 || idx >= from.size()) {
                 break;
             }
@@ -52,11 +54,10 @@ public class ArrayDestructurePattern extends DestructurePattern {
     protected void copy(
             final JelContext ctx, final JsonContainer from, final JsonObject into,
             final int idx, final Span<?> span) throws JelException {
-        final JsonReference ref = from.getReference(idx);
+        final JsonReference ref = JelReflection.getReference(from, idx);
         if (ref == null) {
             return;
         }
-        this.checkImport(ctx, ref, idx, span, from);
         if (span instanceof ParsedToken) {
             into.addReference(((ParsedToken) span).parsed(), ref);
         } else if (span instanceof DestructurePattern) {
@@ -68,15 +69,6 @@ public class ArrayDestructurePattern extends DestructurePattern {
             pattern.destructure(ctx, v.asContainer(), into);
         } else {
             throw new IllegalStateException("unsupported span: " + span);
-        }
-    }
-
-    protected void checkImport(
-            final JelContext ctx, final JsonReference ref, final int i,
-            final Span<?> span, final JsonContainer from) throws JelException {
-        if (ref.getOnly().hasFlag(JelFlags.PRIVATE)) {
-            throw this.error(
-                ctx, "Element has private access: [" + i + "]=" + ref.getOnly(), span, from);
         }
     }
 

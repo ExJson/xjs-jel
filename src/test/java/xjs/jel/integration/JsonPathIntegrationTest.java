@@ -151,6 +151,53 @@ public final class JsonPathIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void key_whenPathPointsToCallable_returnsCallableFacade() {
+        this.inputSuccess("""
+            a >> (): success!
+            b: $a
+            c: $b()
+            """);
+        this.outputTrimmed("""
+            c: success!
+            """);
+    }
+
+    @Test
+    public void key_whenPathPointsToCallable_andValue_returnsValue() {
+        this.inputSuccess("""
+            a >> (): failure
+            a >> var: success!
+            b: $a
+            """);
+        this.outputTrimmed("""
+            b: success!
+            """);
+    }
+
+    @Test
+    public void call_whenPathPointsToCallable_andValue_returnsCallable() {
+        this.inputSuccess("""
+            a >> (): success!
+            a >> var: failure
+            b: $a()
+            """);
+        this.outputTrimmed("""
+            b: success!
+            """);
+    }
+
+    @Test
+    public void otherAccessor_whenPreviousKey_pointsToCallable_returnsNull() {
+        this.inputSuccess("""
+            a >> (): failure
+            b: $a.b
+            """);
+        this.outputTrimmed("""
+            b: null
+            """);
+    }
+
+    @Test
     public void reference_withStrictPathing_whenPathIsNotResolved_throwsException() {
         this.ctx.setStrictPathing(true);
         this.inputFailure("""

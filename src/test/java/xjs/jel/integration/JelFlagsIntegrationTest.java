@@ -3,6 +3,7 @@ package xjs.jel.integration;
 import org.junit.jupiter.api.Test;
 import xjs.core.JsonValue;
 import xjs.jel.JelFlags;
+import xjs.jel.lang.JelObject;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,6 +36,32 @@ public final class JelFlagsIntegrationTest extends AbstractIntegrationTest {
             """);
     }
 
+    @Test
+    public void var_isInvisibleFromOutput() {
+        this.inputSuccess("""
+            a >> var: value
+            b: value
+            """);
+        this.outputTrimmed("""
+            b: value
+            """);
+    }
+
+    @Test
+    public void var_isNotInvisibleOutOfScope() {
+        this.inputSuccess("""
+            a: {
+              b >> var: value
+            }
+            c: $a.b
+            """);
+        this.outputTrimmed("""
+            a: {
+            }
+            c: value
+            """);
+    }
+
     @Test // this is _supposed_ to be an error about illegal access, impl tbd
     public void readingPrivateValue_withStrictPathing_throwsException() {
         this.ctx.setStrictPathing(true);
@@ -53,18 +80,18 @@ public final class JelFlagsIntegrationTest extends AbstractIntegrationTest {
             Application is configured to disallow lenient pathing""");
     }
 
-    @Test // this is _supposed_ to be invisible from output. impl tbd
+    @Test
     public void varValue_hasVarFlag() {
         this.inputSuccess("""
             a >> var: null
             """);
         assertTrue(this.valueOut.isObject());
-        final JsonValue a = this.valueOut.asObject().get("a");
+        final JsonValue a = ((JelObject) this.valueOut).getDeclared("a");
         assertNotNull(a);
         assertTrue(a.hasFlag(JelFlags.VAR));
     }
 
-    @Test // this is _supposed_ to be invisible from output. impl tbd
+    @Test
     public void noinlineValue_hasNoinlineFlag() {
         this.inputSuccess("""
             a >> noinline: null
@@ -73,13 +100,5 @@ public final class JelFlagsIntegrationTest extends AbstractIntegrationTest {
         final JsonValue a = this.valueOut.asObject().get("a");
         assertNotNull(a);
         assertTrue(a.hasFlag(JelFlags.NOINLINE));
-    }
-
-    @Test
-    public void template() {
-        this.inputSuccess("""
-            """);
-        this.outputTrimmed("""
-            """);
     }
 }

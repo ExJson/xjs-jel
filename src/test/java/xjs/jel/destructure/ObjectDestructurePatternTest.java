@@ -55,17 +55,6 @@ public final class ObjectDestructurePatternTest {
         assertEquals(expected, into);
     }
 
-    @Test // todo: this may be unreachable
-    public void destructure_doesNotCopy_privateKeys() {
-        final JsonObject from = Json.object()
-            .add("a", Json.value(1).addFlag(JelFlags.PRIVATE));
-        final DestructurePattern pattern =
-            pattern(key("a"));
-
-        assertThrows(JelException.class, () ->
-            pattern.destructure(JelContext.GLOBAL_CONTEXT, from, Json.object()));
-    }
-
     private static KeyPattern key(final String key) {
         return new KeyPattern(new ParsedToken(TokenType.STRING, key), null);
     }

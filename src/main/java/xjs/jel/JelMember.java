@@ -246,7 +246,7 @@ public class JelMember
         return flat;
     }
 
-    protected boolean isTemplate() {
+    public boolean isTemplate() {
         for (final Modifier m : this.modifiers) {
             if (m instanceof TemplateModifier) {
                 return true;

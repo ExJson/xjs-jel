@@ -115,17 +115,6 @@ public final class ArrayDestructurePatternTest {
         assertEquals(expected, into);
     }
 
-    @Test // todo; this may be unreachable
-    public void destructure_doesNotCopy_privateValues() {
-        final JsonArray from = Json.array()
-            .add(Json.value(1).addFlag(JelFlags.PRIVATE));
-        final DestructurePattern pattern = pattern(
-            List.of(value("a")), List.of());
-
-        assertThrows(JelException.class, () ->
-            pattern.destructure(JelContext.GLOBAL_CONTEXT, from, Json.object()));
-    }
-
     private static ParsedToken value(final String key) {
         return new ParsedToken(TokenType.STRING, key);
     }

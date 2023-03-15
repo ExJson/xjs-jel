@@ -2,14 +2,13 @@ package xjs.jel.modifier;
 
 import xjs.core.JsonArray;
 import xjs.core.JsonCopy;
-import xjs.core.JsonObject;
 import xjs.core.JsonValue;
 import xjs.jel.JelContext;
 import xjs.jel.JelMember;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.Expression;
 import xjs.jel.expression.LiteralExpression;
-import xjs.jel.lang.JelObject;
+import xjs.jel.lang.JelReflection;
 import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
 import xjs.serialization.token.Token;
@@ -46,13 +45,7 @@ public class ImportModifier
                 throw new JelException("Non-object import must have alias")
                     .withSpan(ctx, this);
             }
-            for (final JsonObject.Member m : imported.asObject()) {
-                final JsonValue v = m.getOnly();
-                members.add(JelMember.of(m.getKey(), v.deepCopy()));
-            }
-            if (imported instanceof JelObject) {
-                members.addAll(((JelObject) imported).getCallables());
-            }
+            members.addAll(JelReflection.jelMembers(imported.asObject()));
         }
         return members;
     }
