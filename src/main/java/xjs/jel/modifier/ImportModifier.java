@@ -74,7 +74,11 @@ public class ImportModifier
                 .withSpan(ctx, this)
                 .withDetails("Hint: this file is also being loaded by " + path);
         }
-        return ctx.getImport(path)
-            .copy(JsonCopy.RECURSIVE | JsonCopy.FORMATTING);
+        try {
+            return ctx.getImport(path)
+                .copy(JsonCopy.RECURSIVE | JsonCopy.FORMATTING);
+        } catch (final JelException e) {
+            throw e.withSpan(this);
+        }
     }
 }

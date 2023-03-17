@@ -1,6 +1,7 @@
 package xjs.jel.integration;
 
 import org.junit.jupiter.api.Test;
+import xjs.jel.Privilege;
 import xjs.jel.exception.JelException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -122,6 +123,21 @@ public final class ImportIntegrationTest extends AbstractIntegrationTest {
         this.outputTrimmed("""
             JelException: Dependency not loaded: syntax_errors.xjs
             """);
+    }
+
+    @Test
+    public void import_withoutPrivilegeToImport_throwsException() {
+        this.ctx.setPrivilege(Privilege.NONE);
+        this.inputFailure("""
+            >> import: data.json
+            """);
+        this.outputExactly("""
+            JelException: Unprivileged access
+            ----------------------------------------------------------
+                1 | >> import: data.json
+                       ^^^^^^
+            ----------------------------------------------------------
+            evaluator does not have privilege to import or read files.""");
     }
 
     @Test

@@ -150,7 +150,7 @@ public class JelContext {
             if (f.isDirectory()) {
                 this.loadRecursive(depth + 1, f);
             } else {
-                this.getOrLoadFile(f);
+                this.getOrLoadFile(f, Privilege.ALL);
             }
         }
     }
@@ -242,9 +242,10 @@ public class JelContext {
         if (file == null) {
             throw new JelException("File not found: " + path);
         }
-        final Output out = this.getOrLoadFile(file);
+        final Output out = this.getOrLoadFile(file, this.privilege);
         if (out == null) {
-            throw new IllegalStateException("out");
+            throw new JelException("Unprivileged access")
+                .withDetails(this.getFilename() + " does not have privilege to import or read files.");
         } else if (out.isError()) {
             throw new JelException("Dependency not loaded: " + path, out.getThrown());
         }
@@ -287,18 +288,21 @@ public class JelContext {
     }
 
     public @Nullable JsonValue getOutput(final File file) {
-        final Output out = this.getOrLoadFile(file);
+        final Output out = this.getOrLoadFile(file, Privilege.ALL);
         if (out != null) {
             return out.getValue();
         }
         return null;
     }
 
-    private Output getOrLoadFile(final File file) {
+    private @Nullable Output getOrLoadFile(final File file, final int privilege) {
         final String path = file.getAbsolutePath();
         Output output = this.outputMap.get(path);
         if (output != null) {
             return output;
+        }
+        if ((Privilege.IMPORTS & privilege) != Privilege.IMPORTS) {
+            return null;
         }
         output = this.loadFile(file);
         this.outputMap.put(path, output);
