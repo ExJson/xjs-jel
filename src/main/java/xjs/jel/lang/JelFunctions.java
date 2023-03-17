@@ -48,6 +48,7 @@ public final class JelFunctions {
         register("find", Privilege.EXPERIMENTAL, JelFunctions::find);
         register("range", Privilege.EXPERIMENTAL, JelFunctions::range);
         register("round", JelFunctions::round);
+        register("file", Privilege.IO, JelFunctions::file);
         register("type", JelFunctions::type);
         register("pretty", JelFunctions::pretty);
         register("parse", JelFunctions::parse);
@@ -380,6 +381,11 @@ public final class JelFunctions {
         }
         final double pow = Math.pow(10, places);
         return of(Math.round(num * pow) / pow);
+    }
+
+    public static Expression file(
+            final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
+        throw new JelException("unimplemented").withDetails("This feature is still in design");
     }
 
     public static Expression type(
