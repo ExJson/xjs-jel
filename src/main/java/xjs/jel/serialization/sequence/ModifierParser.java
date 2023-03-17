@@ -191,7 +191,7 @@ public class ModifierParser extends ParserModule {
             case "set": return new SetModifier(current);
             case "from": return new DestructureModifier(current);
             case "var": return new FlagModifier(current, JelFlags.VAR);
-            case "private": return new FlagModifier(current, JelFlags.PRIVATE);
+            case "private": return new FlagModifier(current, JelFlags.PRIVATE | JelFlags.VAR);
             case "noinline": return new NoInlineModifier(current);
             case "raise": return new RaiseModifier(current);
             default: return null;

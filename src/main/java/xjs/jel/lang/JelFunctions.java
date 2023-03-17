@@ -14,6 +14,7 @@ import xjs.jel.exception.JelException;
 import xjs.jel.expression.Callable;
 import xjs.jel.expression.Expression;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
@@ -45,6 +46,7 @@ public final class JelFunctions {
         register("coalesce", Privilege.EXPERIMENTAL, JelFunctions::coalesce);
         register("orElse", JelFunctions::orElse);
         register("find", Privilege.EXPERIMENTAL, JelFunctions::find);
+        register("range", Privilege.EXPERIMENTAL, JelFunctions::range);
         register("type", JelFunctions::type);
         register("pretty", JelFunctions::pretty);
         register("parse", JelFunctions::parse);
@@ -341,6 +343,26 @@ public final class JelFunctions {
             }
         }
         return true;
+    }
+
+    // experimental because we may add a true range (that does not expand into an array)
+    public static Expression range(
+            final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
+        requireArgs(1, 2, args);
+        final int min;
+        final int max;
+        if (args.length == 1) {
+            min = 0;
+            max = args[0].intoInt();
+        } else {
+            min = args[0].intoInt();
+            max = args[1].intoInt();
+        }
+        final JsonArray array = new JsonArray(new ArrayList<>(max - min));
+        for (int i = min; i < max; i++) {
+            array.add(i);
+        }
+        return of(array);
     }
 
     public static Expression type(

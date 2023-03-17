@@ -184,6 +184,7 @@ public class KeyParser extends ParserModule {
             final JelMember.Builder builder, final ContainerToken.Itr itr,
             final int e) throws JelException {
         final ReferenceExpression exp = this.referenceParser().parse(itr);
+        this.whitespaceCollector().append(builder, itr, e);
         if (itr.getIndex() != e) {
             throw new JelException("expected end of alias")
                 .withSpan(exp)
@@ -203,6 +204,7 @@ public class KeyParser extends ParserModule {
         } else {
             exp = this.elementParser().parseInline(itr, e);
         }
+        this.whitespaceCollector().append(builder, itr, e);
         if (itr.getIndex() != e) {
             throw new JelException("expected end of alias")
                 .withSpan((Span<?>) exp);
@@ -221,6 +223,7 @@ public class KeyParser extends ParserModule {
         } else {
             exp = this.operatorParser().parse(itr, e);
         }
+        this.whitespaceCollector().append(builder, itr, e);
         if (itr.getIndex() != e) {
             throw new JelException("expected end of alias")
                 .withSpan(exp);
