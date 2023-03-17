@@ -4,6 +4,7 @@ import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Nullable;
 import xjs.core.JsonContainer;
 import xjs.core.JsonLiteral;
+import xjs.core.JsonReference;
 import xjs.core.JsonValue;
 import xjs.exception.SyntaxException;
 import xjs.jel.exception.JelException;
@@ -45,6 +46,7 @@ public class JelContext {
     private @Nullable JsonContainer parent;
     private boolean outputPrefix;
     private boolean strictPathing;
+    private final Scope globalScope;
     private Scope scope;
     private int privilege;
     private int folderDepth;
@@ -64,7 +66,8 @@ public class JelContext {
         this.sequencer = Sequencer.JEL;
         this.log = log;
         this.outputPrefix = true;
-        this.scope = new Scope();
+        this.globalScope = new Scope();
+        this.scope = this.globalScope;
         this.privilege = Privilege.BASIC;
         this.folderDepth = this == GLOBAL_CONTEXT || isGlobal(root) ? 1 : 8;
     }
@@ -98,6 +101,25 @@ public class JelContext {
 
     public void setStrictPathing(final boolean strictPathing) {
         this.strictPathing = strictPathing;
+    }
+
+    public Scope getGlobalScope() {
+        return this.globalScope;
+    }
+
+    public void defineGlobal(final String key, final JsonValue value) {
+        this.defineGlobal(key, value, false);
+    }
+
+    public void defineGlobal(final String key, final JsonValue value, final boolean mutable) {
+        if (mutable) {
+            this.globalScope.add(new JsonReference(value));
+            return;
+        }
+        if (value instanceof JsonContainer) {
+            ((JsonContainer) value).freeze(true);
+        }
+        this.globalScope.add(key, new JsonReference(value).freeze());
     }
 
     public Sequencer getSequencer() {
@@ -200,7 +222,7 @@ public class JelContext {
     public JsonValue eval(
             final @Nullable String path, final Sequence<?> sequence) throws JelException {
         if (sequence instanceof Expression) {
-            this.pushScope(new Scope(path));
+            this.pushScope(this.globalScope.captureWithPath(path));
             try {
                 return ((Expression) sequence).apply(this);
             } finally {

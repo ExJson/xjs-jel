@@ -3,6 +3,7 @@ package xjs.jel.scope;
 import org.jetbrains.annotations.Nullable;
 import xjs.core.JsonArray;
 import xjs.core.JsonReference;
+import xjs.jel.exception.JelException;
 import xjs.jel.lang.JelObject;
 import xjs.jel.expression.Callable;
 
@@ -106,9 +107,21 @@ public final class Scope implements ReferenceAccessor {
         return this.byIndex.size();
     }
 
+    public Scope captureWithPath(final @Nullable String filePath) throws JelException {
+        if (this.filePath != null) {
+            throw new JelException("Cannot capture scope")
+                .withDetails("Scope is already assigned a file");
+        }
+        return this.withFilePath(filePath);
+    }
+
     public Scope capture() {
+        return this.withFilePath(this.filePath);
+    }
+
+    private Scope withFilePath(final @Nullable String filePath) {
         return new Scope(
-            this.filePath,
+            filePath,
             this.copyIndexStack(),
             this.copyMap(),
             this.copyFrames(),
