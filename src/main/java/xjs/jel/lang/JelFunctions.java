@@ -47,6 +47,7 @@ public final class JelFunctions {
         register("orElse", JelFunctions::orElse);
         register("find", Privilege.EXPERIMENTAL, JelFunctions::find);
         register("range", Privilege.EXPERIMENTAL, JelFunctions::range);
+        register("round", JelFunctions::round);
         register("type", JelFunctions::type);
         register("pretty", JelFunctions::pretty);
         register("parse", JelFunctions::parse);
@@ -363,6 +364,22 @@ public final class JelFunctions {
             array.add(i);
         }
         return of(array);
+    }
+
+    public static Expression round(
+            final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
+        requireArgs(1, 2, args);
+        final double num;
+        final int places;
+        if (args.length == 1) {
+            num = self.intoDouble();
+            places = args[0].intoInt();
+        } else {
+            num = args[0].intoDouble();
+            places = args[1].intoInt();
+        }
+        final double pow = Math.pow(10, places);
+        return of(Math.round(num * pow) / pow);
     }
 
     public static Expression type(
