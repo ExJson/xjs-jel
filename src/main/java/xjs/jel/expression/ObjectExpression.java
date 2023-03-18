@@ -1,7 +1,6 @@
 package xjs.jel.expression;
 
 import xjs.core.JsonReference;
-import xjs.core.JsonValue;
 import xjs.jel.JelContext;
 import xjs.jel.JelFlags;
 import xjs.jel.JelMember;
@@ -28,7 +27,7 @@ public class ObjectExpression extends ContainerExpression<JelObject> {
     protected void addMember(
             final JelContext ctx, final JelObject o, final JelMember m) throws JelException {
         if (m.getAlias() == null) {
-            m.getValue(ctx);
+            m.getExpression().apply(ctx);
             return;
         }
         final String key = m.getKey();
@@ -40,11 +39,19 @@ public class ObjectExpression extends ContainerExpression<JelObject> {
             ctx.getScope().addCallable(key, c);
             return;
         }
-        final JsonValue value = m.getValue(ctx);
-        final JsonReference ref = new JsonReference(value);
-        if (!value.hasFlag(JelFlags.PRIVATE)) {
+        final JsonReference ref = this.getReference(m, ctx);
+        if (!ref.getOnly().hasFlag(JelFlags.PRIVATE)) {
             o.addReference(key, ref);
         }
         ctx.getScope().add(m.getKey(), ref);
+    }
+
+    protected JsonReference getReference(
+            final JelMember m, final JelContext ctx) throws JelException {
+        final Expression exp = m.getExpression();
+        if (exp instanceof ReferenceExpression && m.hasFlag(JelFlags.VAR)) {
+            return ((ReferenceExpression) exp).getReference(ctx);
+        }
+        return new JsonReference(m.getValue(ctx));
     }
 }
