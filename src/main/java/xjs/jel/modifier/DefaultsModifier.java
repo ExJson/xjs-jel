@@ -1,11 +1,17 @@
 package xjs.jel.modifier;
 
+import xjs.core.JsonObject;
 import xjs.core.JsonValue;
+import xjs.jel.JelContext;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.Expression;
 import xjs.jel.expression.ReferenceExpression;
+import xjs.jel.lang.JelReflection;
+import xjs.jel.scope.Scope;
 import xjs.jel.sequence.Sequence;
 import xjs.serialization.Span;
+
+import java.util.List;
 
 public class DefaultsModifier
         extends Sequence.Parent implements Modifier {
@@ -25,7 +31,8 @@ public class DefaultsModifier
                     .withSpan(ctx, this.path)
                     .withDetails("Cannot copy from: " + defaults);
             }
-            final JsonValue out = expression.apply(ctx);
+            final JsonValue out =
+                this.applyWithScope(ctx, defaults.asObject(), expression);
             if (!out.isObject()) {
                 JelException e = new JelException("Cannot copy defaults into non-object value")
                     .withSpan(ctx, this.path)
@@ -37,5 +44,22 @@ public class DefaultsModifier
             }
             return out.asObject().setDefaults(defaults.asObject());
         };
+    }
+
+    private JsonValue applyWithScope(
+            final JelContext ctx, final JsonObject defaults, final Expression exp) throws JelException {
+        final Scope scope = ctx.getScope();
+        scope.pushFrame();
+        JelReflection.copyInto(defaults, scope);
+        try {
+            return exp.apply(ctx);
+        } finally {
+            scope.dropFrame();
+        }
+    }
+
+    @Override
+    public List<Span<?>> flatten() {
+        return this.path.flatten();
     }
 }

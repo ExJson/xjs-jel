@@ -8,16 +8,21 @@ import xjs.core.JsonObject;
 import xjs.core.JsonReference;
 import xjs.core.JsonValue;
 import xjs.jel.JelContext;
+import xjs.jel.JelMember;
 import xjs.jel.Privilege;
 import xjs.jel.exception.IllegalJelArgsException;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.Callable;
 import xjs.jel.expression.Expression;
+import xjs.jel.expression.TemplateExpression;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static xjs.jel.expression.LiteralExpression.of;
@@ -39,6 +44,7 @@ public final class JelFunctions {
         register("endsWith", JelFunctions::endsWith);
         register("contains", JelFunctions::contains);
         register("has", JelFunctions::has);
+        register("remove", JelFunctions::remove);
         register("replace", JelFunctions::replace);
         register("matches", JelFunctions::matches);
         register("lowercase", JelFunctions::lowercase);
@@ -49,6 +55,8 @@ public final class JelFunctions {
         register("range", Privilege.EXPERIMENTAL, JelFunctions::range);
         register("round", JelFunctions::round);
         register("file", Privilege.IO, JelFunctions::file);
+        register("keys", JelFunctions::keys);
+        register("values", JelFunctions::values);
         register("type", JelFunctions::type);
         register("pretty", JelFunctions::pretty);
         register("parse", JelFunctions::parse);
@@ -107,10 +115,69 @@ public final class JelFunctions {
     }
 
     public static Expression dir(
-            final JsonValue self, final JelContext ctx, final JsonValue... args) {
-        final JsonArray a = new JsonArray();
-        FUNCTIONS.keySet().forEach(a::add);
-        return of(a);
+            final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
+        requireArgs(0, 2, args);
+
+        final JsonValue source;// = args.length == 1 ? args[0] : self;
+        final boolean privileged;
+
+        if (args.length == 0) {
+            source = self;
+            privileged = false;
+        } else if (args.length == 1) {
+            if (args[0].isBoolean()) {
+                source = self;
+                privileged = args[0].asBoolean();
+            } else {
+                source = args[0];
+                privileged = false;
+            }
+        } else {
+            source = args[0];
+            privileged = args[1].intoBoolean();
+        }
+        final Set<String> keys = new HashSet<>();
+        final Set<String> templates = new HashSet<>();
+        final Set<String> functions = new HashSet<>();
+
+        if (privileged) {
+            functions.addAll(FUNCTIONS.keySet());
+        } else {
+            for (final Map.Entry<String, Function> entry : FUNCTIONS.entrySet()) {
+                if (ctx.hasPrivilege(entry.getValue().privilege)) {
+                    functions.add(entry.getKey());
+                }
+            }
+        }
+        final List<JelMember> members = new ArrayList<>(ctx.getScope().jelMembers());
+        if (source.isObject()) {
+            members.addAll(JelReflection.jelMembers(source.asObject()));
+        }
+        for (final JelMember member : members) {
+            final String key = member.getKey();
+            final Expression exp = member.getExpression();
+            if (exp instanceof TemplateExpression) {
+                templates.add(key);
+            } else if (exp instanceof Callable) {
+                functions.add(key);
+            } else {
+                keys.add(key);
+            }
+        }
+        final JsonArray keyValues = new JsonArray();
+        final JsonArray templateValues = new JsonArray();
+        final JsonArray functionValues = new JsonArray();
+
+        keys.forEach(keyValues::add);
+        templates.forEach(templateValues::add);
+        functions.forEach(functionValues::add);
+
+        final JsonObject o = new JsonObject()
+            .add("keys", keyValues)
+            .add("templates", templateValues)
+            .add("functions", functionValues);
+
+        return of(o);
     }
 
     public static Expression min(
@@ -265,6 +332,17 @@ public final class JelFunctions {
         return of(false);
     }
 
+    public static Expression remove(
+            final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
+        requireArgs(1, 1, args);
+        if (self.isArray()) {
+            self.asArray().remove(args[0].asInt());
+        } else if (self.isObject()) {
+            self.asObject().remove(args[0].asString());
+        }
+        return of(self);
+    }
+
     public static Expression replace(
             final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
         requireArgs(2, 2, args);
@@ -386,6 +464,32 @@ public final class JelFunctions {
     public static Expression file(
             final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
         throw new JelException("unimplemented").withDetails("This feature is still in design");
+    }
+
+    public static Expression keys(
+            final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
+        return instanceMethodOrSingleArg(self, args, v -> {
+           if (v.isObject()) {
+               final JsonArray a = new JsonArray();
+               v.asObject().keys().forEach(a::add);
+               return of(a);
+           }
+           return ofNull();
+        });
+    }
+
+    public static Expression values(
+            final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
+        return instanceMethodOrSingleArg(self, args, v-> {
+            if (v.isArray()) {
+                return of(v);
+            } else if (v.isObject()) {
+                final JsonArray a = new JsonArray();
+                v.asObject().values().forEach(a::add);
+                return of(a);
+            }
+            return ofNull();
+        });
     }
 
     public static Expression type(

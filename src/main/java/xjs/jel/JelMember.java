@@ -8,8 +8,10 @@ import xjs.core.JsonLiteral;
 import xjs.core.JsonType;
 import xjs.core.JsonValue;
 import xjs.jel.exception.JelException;
+import xjs.jel.expression.Callable;
 import xjs.jel.expression.Expression;
 import xjs.jel.expression.LiteralExpression;
+import xjs.jel.lang.CallableFacade;
 import xjs.jel.modifier.Modifier;
 import xjs.jel.modifier.TemplateModifier;
 import xjs.jel.sequence.AliasType;
@@ -195,8 +197,13 @@ public class JelMember
 
     public JsonValue getValue(final JelContext ctx) throws JelException {
         final JsonValue formatting = this.getFormatting();
-        return this.expression.apply(ctx)
-            .setDefaultMetadata(formatting)
+        final JsonValue v;
+        if (this.expression instanceof Callable) {
+            v = new CallableFacade((Callable) this.expression);
+        } else {
+            v = this.expression.apply(ctx);
+        }
+        return v.setDefaultMetadata(formatting)
             .addFlag(formatting.getFlags());
     }
 

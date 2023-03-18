@@ -120,9 +120,11 @@ public final class ImportIntegrationTest extends AbstractIntegrationTest {
         this.inputFailure("""
             >> import: syntax_errors.xjs
             """);
-        this.outputTrimmed("""
+        this.outputExactly("""
             JelException: Dependency not loaded: syntax_errors.xjs
-            """);
+            ------------------------------------------------------
+                1 | >> import: syntax_errors.xjs
+                       ^^^^^^""");
     }
 
     @Test

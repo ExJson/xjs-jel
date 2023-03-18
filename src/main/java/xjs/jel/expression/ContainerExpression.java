@@ -25,12 +25,20 @@ public abstract class ContainerExpression<C extends JsonContainer>
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public C apply(final JelContext ctx) throws JelException {
         final C out = this.newContainer();
         ctx.pushParent(out);
         ctx.getScope().pushFrame();
+        try {
+            return this.buildContainer(out, ctx);
+        } finally {
+            ctx.dropParent();
+            ctx.getScope().dropFrame();
+        }
+    }
 
+    @SuppressWarnings("unchecked")
+    private C buildContainer(final C out, final JelContext ctx) throws JelException {
         boolean comments = false;
         int trailing = 0;
         for (final Span<?> sub : this.subs) {
@@ -51,8 +59,6 @@ public abstract class ContainerExpression<C extends JsonContainer>
                 }
             }
         }
-        ctx.dropParent();
-        ctx.getScope().dropFrame();
         return (C) out.setLinesTrailing(trailing);
     }
 

@@ -7,6 +7,7 @@ import xjs.core.JsonReference;
 import xjs.core.JsonValue;
 import xjs.jel.JelMember;
 import xjs.jel.expression.Callable;
+import xjs.jel.scope.Scope;
 import xjs.serialization.util.HashIndexTable;
 
 import java.util.ArrayList;
@@ -83,6 +84,10 @@ public class JelObject extends JsonObject implements JelContainer {
             ? index : this.callableKeys.lastIndexOf(key);
     }
 
+    public List<String> callableKeys() {
+        return new ArrayList<>(this.callableKeys);
+    }
+
     @Override
     public JsonObject addReference(final String key, final JsonReference reference) {
         if (JelContainer.isVisible(reference.getOnly())) {
@@ -105,9 +110,6 @@ public class JelObject extends JsonObject implements JelContainer {
     }
 
     public @Nullable JsonReference getDeclaredReference(final String key) {
-        // in the new system, values always take precedent over callables,
-        // so there's no need to store them separately and do a double lookup
-
         final int index = this.indexOfDeclared(key);
         if (index != -1) {
             return this.declared.get(index);
@@ -128,6 +130,10 @@ public class JelObject extends JsonObject implements JelContainer {
         int index = this.declaredTable.get(key);
         return index != -1 && key.equals(this.declaredKeys.get(index))
             ? index : this.declaredKeys.lastIndexOf(key);
+    }
+
+    public List<String> declaredKeys() {
+        return new ArrayList<>(this.declaredKeys);
     }
 
     public JelObject removeDeclared(final String key) {
@@ -186,6 +192,16 @@ public class JelObject extends JsonObject implements JelContainer {
         return declared;
     }
 
+    public void copyInto(final Scope scope) {
+        for (int i = 0; i < this.declared.size(); i++) {
+            scope.add(this.declaredKeys.get(i), this.declared.get(i));
+        }
+        for (int i = 0; i < this.callables.size(); i++) {
+            final Callable callable = this.callables.get(i);
+            scope.addCallable(this.callableKeys.get(i), callable);
+        }
+    }
+
     @Override
     public int declaredSize() {
         return this.declared.size();
@@ -193,6 +209,10 @@ public class JelObject extends JsonObject implements JelContainer {
 
     @Override
     public JelObject copy(final int options) {
+        return this.copy(false, options);
+    }
+
+    public JelObject copy(final boolean preserveCallables, final int options) {
         final List<String> declaredKeysCopy = new ArrayList<>(this.declaredKeys);
         final List<JsonReference> declaredCopy = copyReferences(this.declared, options);
         final List<String> visibleKeys = new ArrayList<>();
@@ -205,9 +225,14 @@ public class JelObject extends JsonObject implements JelContainer {
                 visible.add(reference);
             }
         }
+        final List<String> callableKeysCopy =
+            preserveCallables ? this.callableKeys : new ArrayList<>(this.callableKeys);
+        final List<Callable> callablesCopy =
+            preserveCallables ? this.callables : new ArrayList<>(this.callables);
+
         final JelObject copy = new JelObject(
-            visibleKeys, visible, new ArrayList<>(this.callableKeys),
-            new ArrayList<>(this.callables), declaredKeysCopy, declaredCopy);
+            visibleKeys, visible, callableKeysCopy, callablesCopy, declaredKeysCopy, declaredCopy);
+
         if ((options & JsonCopy.FORMATTING) == JsonCopy.FORMATTING) {
             copy.setLinesTrailing(this.linesTrailing);
         }

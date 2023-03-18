@@ -31,13 +31,15 @@ public class ObjectDestructurePattern extends DestructurePattern {
             throw this.error(ctx, "Cannot destructure array as object", from);
         }
         for (final KeyPattern key : this.keys) {
-            final JsonReference ref = JelReflection.getReference(from.asObject(), key.source);
-            if (ref != null) {
-                into.addReference(key.key, ref);
-            } else if (from instanceof JelObject && into instanceof JelObject) {
+            if (from instanceof JelObject && into instanceof JelObject) {
                 final Callable c = ((JelObject) from).getCallable(key.source);
                 if (c != null) {
                     ((JelObject) into).addCallable(key.key, c);
+                }
+            } else {
+                final JsonReference ref = JelReflection.getReference(from.asObject(), key.source);
+                if (ref != null) {
+                    into.addReference(key.key, ref);
                 }
             }
         }

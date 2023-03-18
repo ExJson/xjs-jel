@@ -37,14 +37,17 @@ public class ArrayGeneratorExpression extends Sequence.Combined implements Expre
         int i = 0;
         for (final JsonReference ref : this.buildSource(ctx).references()) {
             scope.pushFrame();
-            scope.add(INDEX_NAME, new JsonReference(Json.value(i++)));
-            scope.add(VALUE_NAME, ref);
-            final Expression modified = Modifier.modify(this.output, this.captures);
-            final JsonValue v = modified.apply(ctx);
-            if (!v.isNull()) {
-                array.add(v);
+            try {
+                scope.add(INDEX_NAME, new JsonReference(Json.value(i++)));
+                scope.add(VALUE_NAME, ref);
+                final Expression modified = Modifier.modify(this.output, this.captures);
+                final JsonValue v = modified.apply(ctx);
+                if (!v.isNull()) {
+                    array.add(v);
+                }
+            } finally {
+                scope.dropFrame();
             }
-            scope.dropFrame();
         }
         return array;
     }

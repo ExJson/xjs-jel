@@ -3,6 +3,7 @@ package xjs.jel.scope;
 import org.jetbrains.annotations.Nullable;
 import xjs.core.JsonArray;
 import xjs.core.JsonReference;
+import xjs.jel.JelMember;
 import xjs.jel.exception.JelException;
 import xjs.jel.lang.JelObject;
 import xjs.jel.expression.Callable;
@@ -95,6 +96,10 @@ public final class Scope implements ReferenceAccessor {
         return this.byIndex.getReference(index);
     }
 
+    public List<JelMember> jelMembers() {
+        return this.map.jelMembers();
+    }
+
     public void dropFrame() {
         this.byIndex = this.indexStack.pop();
         final Frame dropped = this.frames.pop();
@@ -116,6 +121,8 @@ public final class Scope implements ReferenceAccessor {
     }
 
     public Scope capture() {
+        // todo: to allow forward referencing inside of callables, we would have to
+        //   somehow lazily freeze each captured scope when its parent drops a frame????
         return this.withFilePath(this.filePath);
     }
 

@@ -7,6 +7,8 @@ import xjs.core.JsonValue;
 import xjs.jel.JelContext;
 import xjs.jel.exception.IllegalJelArgsException;
 import xjs.jel.exception.JelException;
+import xjs.jel.exception.YieldedValueException;
+import xjs.jel.lang.CallableFacade;
 import xjs.jel.modifier.Modifier;
 import xjs.jel.scope.Scope;
 import xjs.jel.sequence.JelType;
@@ -53,6 +55,12 @@ public class TemplateExpression
             } else {
                 return LiteralExpression.of(exp.apply(ctx));
             }
+        } catch (final YieldedValueException e) {
+            final JsonValue yielded = e.getValue();
+            if (yielded instanceof CallableFacade) {
+                return ((CallableFacade) yielded).getWrapped();
+            }
+            return LiteralExpression.of(yielded);
         } finally {
             ctx.dropScope();
             scope.dropFrame();

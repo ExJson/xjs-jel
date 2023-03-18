@@ -6,6 +6,7 @@ import xjs.core.JsonObject;
 import xjs.core.JsonReference;
 import xjs.jel.JelMember;
 import xjs.jel.expression.Callable;
+import xjs.jel.scope.Scope;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,5 +73,30 @@ public final class JelReflection {
 
     public static List<JelMember> jelMembers(final JelObject object) {
         return object.jelMembers();
+    }
+
+    public static void copyInto(final JsonObject object, final Scope scope) {
+        if (object instanceof JelObject) {
+            ((JelObject) object).copyInto(scope);
+        } else {
+            for (final JsonObject.Member member : object) {
+                scope.add(member.getKey(), member.getReference());
+            }
+        }
+    }
+
+    public static void copyInto(final JelObject object, final Scope scope) {
+        object.copyInto(scope);
+    }
+
+    public static List<String> declaredKeys(final JsonObject object) {
+        if (object instanceof JelObject) {
+            return ((JelObject) object).declaredKeys();
+        }
+        return object.keys();
+    }
+
+    public static List<String> declaredKeys(final JelObject object) {
+        return object.declaredKeys();
     }
 }

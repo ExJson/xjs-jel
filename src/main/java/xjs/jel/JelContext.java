@@ -8,6 +8,7 @@ import xjs.core.JsonReference;
 import xjs.core.JsonValue;
 import xjs.exception.SyntaxException;
 import xjs.jel.exception.JelException;
+import xjs.jel.exception.YieldedValueException;
 import xjs.jel.expression.Expression;
 import xjs.jel.scope.Scope;
 import xjs.jel.sequence.Sequence;
@@ -91,6 +92,11 @@ public class JelContext {
         this.privilege = privilege;
     }
 
+    public boolean hasPrivilege(
+            final @MagicConstant(flagsFromClass = Privilege.class) int privilege) {
+        return (privilege & this.privilege) == privilege;
+    }
+
     public void setOutputPrefix(final boolean outputPrefix) {
         this.outputPrefix = outputPrefix;
     }
@@ -115,8 +121,7 @@ public class JelContext {
         if (mutable) {
             this.globalScope.add(new JsonReference(value));
             return;
-        }
-        if (value instanceof JsonContainer) {
+        } else if (value instanceof JsonContainer) {
             ((JsonContainer) value).freeze(true);
         }
         this.globalScope.add(key, new JsonReference(value).freeze());
@@ -222,11 +227,15 @@ public class JelContext {
     public JsonValue eval(
             final @Nullable String path, final Sequence<?> sequence) throws JelException {
         if (sequence instanceof Expression) {
+            final int stackSize = this.scopeStack.size();
             this.pushScope(this.globalScope.captureWithPath(path));
             try {
                 return ((Expression) sequence).apply(this);
+            } catch (final YieldedValueException e) {
+                return e.getValue();
             } finally {
                 this.dropScope();
+                assert this.scopeStack.size() == stackSize : "memory leak!";
             }
         }
         throw new JelException("not an expression").withSpan(sequence);

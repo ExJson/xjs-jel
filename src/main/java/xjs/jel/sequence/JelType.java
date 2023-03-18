@@ -25,6 +25,7 @@ public enum JelType {
     MEMBER,
     KEY,
     ALIAS,
+    SCOPE,
     ARRAY_PATTERN,
     OBJECT_PATTERN,
     FLAG,
