@@ -35,7 +35,7 @@ public class ObjectDestructurePattern extends DestructurePattern {
                 final Callable c = ((JelObject) from).getCallable(key.source);
                 if (c != null) {
                     ((JelObject) into).addCallable(key.key, c);
-                    return;
+                    continue;
                 }
             }
             final JsonReference ref = JelReflection.getReference(from.asObject(), key.source);

@@ -47,6 +47,22 @@ public final class DestructurePatternIntegrationTest extends AbstractIntegration
     }
 
     @Test
+    public void objectDestructure_doesCapture_multipleTemplateReferences() {
+        this.inputSuccess("""
+            { a, b } >> from: {
+              a >> (): 123
+              b >> (): 456
+            }
+            c: $a()
+            d: $b()
+            """);
+        this.outputTrimmed("""
+            c: 123
+            d: 456
+            """);
+    }
+
+    @Test
     public void objectDestructure_whenSourceIsNotObject_throwsException() {
         this.inputFailure("""
             { a } >> from: [ 1 ]
