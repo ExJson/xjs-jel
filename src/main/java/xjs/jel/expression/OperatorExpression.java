@@ -119,11 +119,28 @@ public class OperatorExpression
     }
 
     protected static JsonValue subtract(final JsonValue lhs, final JsonValue rhs) {
-        if (lhs.isObject() && isKeys(rhs)) {
-            final JsonObject o = new JsonObject().addAll(lhs.asObject());
-            rhs.intoArray().forEach(v -> o.remove(v.asString()));
-            return o;
-        } else if (lhs.isContainer()) {
+        if (lhs.isObject()) {
+            if (rhs.isObject()) {
+                final JsonObject o = new JsonObject().addAll(lhs.asObject());
+                for (final JsonObject.Member m : rhs.asObject()) {
+                    final JsonValue removed = o.get(m.getKey());
+                    if (removed == null) {
+                        continue;
+                    }
+                    if (removed.isContainer()) {
+                        o.set(m.getKey(), subtract(removed, m.getValue()));
+                    } else {
+                        o.remove(m.getKey());
+                    }
+                }
+                return o;
+            } else if (isKeys(rhs)) {
+                final JsonObject o = new JsonObject().addAll(lhs.asObject());
+                rhs.intoArray().forEach(v -> o.remove(v.asString()));
+                return o;
+            }
+        }
+        if (lhs.isContainer()) {
             return lhs.shallowCopy()
                 .asContainer()
                 .removeAll(rhs.intoContainer().values());

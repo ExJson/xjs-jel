@@ -55,6 +55,18 @@ public final class OperatorExpressionIntegrationTest extends AbstractIntegration
     }
 
     @Test
+    public void subtractObject_findsRecursiveDifference() {
+        this.inputSuccess("""
+            a >> var: { a: 1, b: [ 2, 3, 4 ] }
+            b >> var: { a: null, b: [ 2, 4 ] }
+            c: $a - $b
+            """);
+        this.outputTrimmed("""
+            c: { b: [ 3 ] }
+            """);
+    }
+
+    @Test
     public void divideByZero_isCaughtByEvaluator() {
         this.inputFailure("""
             a: 1 % 0

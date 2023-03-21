@@ -513,6 +513,10 @@ public class JelContext {
     public void dispose() {
         this.outputMap.clear();
         this.scopeStack.clear();
+        this.parentStack.clear();
+        this.required.clear();
+        this.inProgress.clear();
+        this.filesInProgress.clear();
         this.scope.dispose();
     }
 
