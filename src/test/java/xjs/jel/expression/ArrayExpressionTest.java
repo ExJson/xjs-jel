@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class ArrayExpressionTest {
 
@@ -40,7 +41,7 @@ public final class ArrayExpressionTest {
             JelMember.of((Alias) null, Json.value(3)));
         final ArrayExpression exp = exp(members);
 
-        assertEquals(Json.array(1, 2, 3), exp.apply(this.ctx));
+        assertTrue(Json.array(1, 2, 3).matches(exp.apply(this.ctx)));
     }
 
     @Test

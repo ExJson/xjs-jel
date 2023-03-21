@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class TemplateExpressionTest {
 
@@ -52,7 +53,7 @@ public final class TemplateExpressionTest {
         final TemplateExpression exp = exp(path(key("a")), "a");
         final JsonValue value = Json.value(1234);
 
-        assertEquals(value, this.call(exp, value));
+        assertTrue(value.matches(this.call(exp, value)));
     }
 
     @Test
@@ -66,7 +67,7 @@ public final class TemplateExpressionTest {
         exp.setCapture(this.ctx.getScope().capture());
         scope.dropFrame();
 
-        assertEquals(value, this.call(exp, value));
+        assertTrue(value.matches(this.call(exp, value)));
     }
 
     @Test
@@ -80,7 +81,7 @@ public final class TemplateExpressionTest {
         final Callable next = (Callable) ret;
         final Expression out = next.call(Json.object(), this.ctx, Json.value(15));
 
-        assertEquals(Json.value(25), out.apply(this.ctx));
+        assertTrue(Json.value(25).matches(out.apply(this.ctx)));
     }
 
     private JsonValue call(final Callable callable, final JsonValue... args) throws JelException {

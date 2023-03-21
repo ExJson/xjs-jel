@@ -204,7 +204,7 @@ public class JelMember
             v = this.expression.apply(ctx);
         }
         return v.setDefaultMetadata(formatting)
-            .addFlag(formatting.getFlags());
+            .setFlags(formatting.getFlags());
     }
 
     public boolean isModified() {

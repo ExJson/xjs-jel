@@ -16,6 +16,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class ImportModifierTest {
     
@@ -35,7 +36,7 @@ public final class ImportModifierTest {
         this.ctx.addOutput(new File("/test.xjs"), value);
 
         modifier.modify(this.ctx, member);
-        assertEquals(value, member.getExpression().apply(this.ctx));
+        assertTrue(value.matches(member.getExpression().apply(this.ctx)));
     }
     
     @Test
@@ -51,11 +52,11 @@ public final class ImportModifierTest {
 
         final JelMember one = members.get(0);
         assertEquals("a", one.getAlias().key());
-        assertEquals(Json.value(1), one.getExpression().apply(this.ctx));
+        assertTrue(Json.value(1).matches(one.getExpression().apply(this.ctx)));
 
         final JelMember two = members.get(1);
         assertEquals("b", two.getAlias().key());
-        assertEquals(Json.value(2), two.getExpression().apply(this.ctx));
+        assertTrue(Json.value(2).matches(two.getExpression().apply(this.ctx)));
     }
 
     @Test

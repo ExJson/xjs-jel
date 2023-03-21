@@ -20,6 +20,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class DestructureModifierTest {
 
@@ -44,11 +45,11 @@ public final class DestructureModifierTest {
 
         final JelMember one = modified.get(0);
         assertEquals("a", one.getAlias().key());
-        assertEquals(Json.value(1), one.getExpression().apply(this.ctx));
+        assertTrue(Json.value(1).matches(one.getExpression().apply(this.ctx)));
 
         final JelMember two = modified.get(1);
         assertEquals("b", two.getAlias().key());
-        assertEquals(Json.value(2), two.getExpression().apply(this.ctx));
+        assertTrue(Json.value(2).matches(two.getExpression().apply(this.ctx)));
     }
 
     @Test

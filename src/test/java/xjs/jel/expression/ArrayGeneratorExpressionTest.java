@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class ArrayGeneratorExpressionTest {
 
@@ -35,7 +35,7 @@ public final class ArrayGeneratorExpressionTest {
     @Test
     public void simpleGenerator_returnsValues() throws JelException {
         final Expression exp = exp(values(1, 2, 3), path(key("v")));
-        assertEquals(Json.array(1, 2, 3), exp.apply(this.ctx));
+        assertTrue(Json.array(1, 2, 3).matches(exp.apply(this.ctx)));
     }
 
     @Test
@@ -44,13 +44,13 @@ public final class ArrayGeneratorExpressionTest {
             values(1, 2, 3),
             math(num(2), op(Operator.MULTIPLY), path(key("v"))));
 
-        assertEquals(Json.array(2, 4, 6), exp.apply(this.ctx));
+        assertTrue(Json.array(2, 4, 6).matches(exp.apply(this.ctx)));
     }
 
     @Test
     public void simpleGenerator_returnsIndices() throws JelException {
         final Expression exp = exp(values("a", "b", "c"), path(key("i")));
-        assertEquals(Json.array(0, 1, 2), exp.apply(this.ctx));
+        assertTrue(Json.array(0, 1, 2).matches(exp.apply(this.ctx)));
     }
 
     private static ArrayGeneratorExpression exp(

@@ -4,11 +4,14 @@ import org.jetbrains.annotations.Nullable;
 import xjs.core.JsonContainer;
 import xjs.core.JsonObject;
 import xjs.core.JsonReference;
+import xjs.core.JsonValue;
 import xjs.jel.JelMember;
 import xjs.jel.expression.Callable;
+import xjs.jel.scope.CallableAccessor;
 import xjs.jel.scope.Scope;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class JelReflection {
@@ -57,6 +60,31 @@ public final class JelReflection {
 
     public static @Nullable Callable getCallable(final JelObject object, final String key) {
         return object.getCallable(key);
+    }
+
+    public static List<String> callableKeys(final JsonObject object) {
+        if (object instanceof JelObject) {
+            return ((JelObject) object).callableKeys();
+        }
+        return Collections.emptyList();
+    }
+
+    public static List<String> callableKeys(final JelObject object) {
+        return object.callableKeys();
+    }
+
+    public static List<JelMember> jelMembers(final JsonValue value) {
+        if (value.isObject()) {
+            return jelMembers(value.asObject());
+        } else if (!(value instanceof CallableAccessor)) {
+            return Collections.emptyList();
+        }
+        final List<JelMember> members = new ArrayList<>();
+        final CallableAccessor accessor = (CallableAccessor) value;
+        for (final String key : accessor.callableKeys()) {
+            members.add(JelMember.of(key, accessor.getCallable(key)));
+        }
+        return members;
     }
 
     public static List<JelMember> jelMembers(final JsonObject object) {

@@ -8,6 +8,7 @@ import xjs.core.JsonType;
 import xjs.core.JsonValue;
 import xjs.core.StringType;
 import xjs.jel.JelContext;
+import xjs.jel.JelFlags;
 import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
 import xjs.serialization.token.NumberToken;
@@ -73,6 +74,10 @@ public abstract class LiteralExpression
         return new OfNull(null);
     }
 
+    protected static JsonValue created(final JsonValue value) {
+        return value.setFlags(JelFlags.CREATED);
+    }
+
     public static class OfNumber extends LiteralExpression {
         private final double number;
 
@@ -83,7 +88,7 @@ public abstract class LiteralExpression
 
         @Override
         public JsonValue apply(final JelContext ctx) {
-            return Json.value(this.number);
+            return created(Json.value(this.number));
         }
 
         @Override
@@ -113,14 +118,14 @@ public abstract class LiteralExpression
         @Override
         public JsonValue apply(final JelContext ctx) {
             if (this.subs.isEmpty()) {
-                return Json.value(this.text);
+                return created(Json.value(this.text));
             } else if (this.subs.size() == 1) {
                 final Token t = this.subs.get(0);
                 if (t instanceof StringToken) {
-                    return new JsonString(this.text, t.stringType());
+                    return created(new JsonString(this.text, t.stringType()));
                 }
             }
-            return new JsonString(this.text, StringType.IMPLICIT);
+            return created(new JsonString(this.text, StringType.IMPLICIT));
         }
 
         @Override
@@ -160,6 +165,7 @@ public abstract class LiteralExpression
 
     public static class OfValue extends LiteralExpression {
         private final JsonValue value;
+        private boolean created = true;
 
         private OfValue(final @Nullable List<Token> tokens, final JsonValue value) {
             super(JelType.fromValue(value), tokens);
@@ -168,6 +174,10 @@ public abstract class LiteralExpression
 
         @Override
         public JsonValue apply(final JelContext ctx) {
+            if (this.created) {
+                this.created = false;
+                return created(this.value);
+            }
             return this.value;
         }
     }
@@ -179,7 +189,7 @@ public abstract class LiteralExpression
 
         @Override
         public JsonValue apply(final JelContext ctx) {
-            return JsonLiteral.jsonNull();
+            return created(JsonLiteral.jsonNull());
         }
 
         @Override

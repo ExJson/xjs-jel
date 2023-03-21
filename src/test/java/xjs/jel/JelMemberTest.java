@@ -76,11 +76,11 @@ public final class JelMemberTest {
 
         final JelMember one = members.get(0);
         assertEquals("a", one.getAlias().key());
-        assertEquals(Json.value(1), one.getExpression().apply(this.ctx));
+        assertTrue(Json.value(1).matches(one.getExpression().apply(this.ctx)));
 
         final JelMember two = members.get(1);
         assertEquals("b", two.getAlias().key());
-        assertEquals(Json.value(2), two.getExpression().apply(this.ctx));
+        assertTrue(Json.value(2).matches(two.getExpression().apply(this.ctx)));
     }
 
     @Test

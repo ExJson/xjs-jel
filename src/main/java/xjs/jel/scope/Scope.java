@@ -84,6 +84,11 @@ public final class Scope implements ReferenceAccessor {
         return this.map.getCallable(key);
     }
 
+    @Override
+    public List<String> callableKeys() {
+        return this.map.callableKeys();
+    }
+
     public void add(final JsonReference ref) {
         this.byIndex.addReference(ref);
     }

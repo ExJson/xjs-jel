@@ -5,6 +5,9 @@ import xjs.core.JsonReference;
 import xjs.jel.expression.Callable;
 import xjs.jel.lang.JelReflection;
 
+import java.util.Collections;
+import java.util.List;
+
 public class ContainerAccessor implements ReferenceAccessor {
     private final JsonContainer container;
 
@@ -36,6 +39,12 @@ public class ContainerAccessor implements ReferenceAccessor {
     public Callable getCallable(final String key) {
         return this.container.isObject()
             ? JelReflection.getCallable(this.container.asObject(), key) : null;
+    }
+
+    @Override
+    public List<String> callableKeys() {
+        return this.container.isObject()
+            ? JelReflection.callableKeys(this.container.asObject()) : Collections.emptyList();
     }
 
     @Override

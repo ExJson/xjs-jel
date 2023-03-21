@@ -11,6 +11,7 @@ import xjs.jel.sequence.Sequence;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static xjs.jel.sequence.Operator.ADD;
 import static xjs.jel.sequence.Operator.SUBTRACT;
 import static xjs.jel.sequence.Operator.MULTIPLY;
@@ -22,7 +23,7 @@ public final class OperatorExpressionTest {
         final Expression exp =
             exp(num(2), op(ADD), num(2));
 
-        assertEquals(Json.value(4), exp.apply(null));
+        assertTrue(Json.value(4).matches(exp.apply(null)));
     }
 
     @Test
@@ -30,7 +31,7 @@ public final class OperatorExpressionTest {
         final Expression exp =
             exp(object("a", 1), op(ADD), object("b", 2));
 
-        assertEquals(Json.object().add("a", 1).add("b", 2), exp.apply(null));
+        assertTrue(Json.object().add("a", 1).add("b", 2).matches(exp.apply(null)));
     }
 
     @Test
@@ -38,7 +39,7 @@ public final class OperatorExpressionTest {
         final Expression exp =
             exp(array(1, 2, 3), op(ADD), num(4));
 
-        assertEquals(Json.array(1, 2, 3, 4), exp.apply(null));
+        assertTrue(Json.array(1, 2, 3, 4).matches(exp.apply(null)));
     }
 
     @Test
@@ -46,7 +47,7 @@ public final class OperatorExpressionTest {
         final Expression exp =
             exp(string("hello"), op(ADD), string(", "), op(ADD), string("world"));
 
-        assertEquals(Json.value("hello, world"), exp.apply(null));
+        assertTrue(Json.value("hello, world").matches(exp.apply(null)));
     }
 
     @Test
@@ -54,7 +55,7 @@ public final class OperatorExpressionTest {
         final Expression exp =
             exp(string("result: "), op(ADD), num(4));
 
-        assertEquals(Json.value("result: 4"), exp.apply(null));
+        assertTrue(Json.value("result: 4").matches(exp.apply(null)));
     }
 
     @Test
@@ -62,7 +63,7 @@ public final class OperatorExpressionTest {
         final Expression exp =
             exp(num(1), op(SUBTRACT), num(3));
 
-        assertEquals(Json.value(-2), exp.apply(null));
+        assertTrue(Json.value(-2).matches(exp.apply(null)));
     }
 
     @Test
@@ -72,7 +73,7 @@ public final class OperatorExpressionTest {
             op(SUBTRACT),
             string("k1"));
 
-        assertEquals(Json.object().add("k2", "v2"), exp.apply(null));
+        assertTrue(Json.object().add("k2", "v2").matches(exp.apply(null)));
     }
 
     @Test
@@ -82,7 +83,7 @@ public final class OperatorExpressionTest {
             op(SUBTRACT),
             array("a", "c"));
 
-        assertEquals(Json.object().add("b", 2).add("d", 4), exp.apply(null));
+        assertTrue(Json.object().add("b", 2).add("d", 4).matches(exp.apply(null)));
     }
 
     @Test
@@ -92,7 +93,7 @@ public final class OperatorExpressionTest {
             op(SUBTRACT),
             num(1));
 
-        assertEquals(Json.array(2, 3), exp.apply(null));
+        assertTrue(Json.array(2, 3).matches(exp.apply(null)));
     }
 
     @Test
@@ -102,7 +103,7 @@ public final class OperatorExpressionTest {
             op(SUBTRACT),
             array(2, 4, "absent"));
 
-        assertEquals(Json.array(1, 3), exp.apply(null));
+        assertTrue(Json.array(1, 3).matches(exp.apply(null)));
     }
 
     @Test
@@ -118,7 +119,7 @@ public final class OperatorExpressionTest {
         final Expression exp =
             exp(string("01"), op(MULTIPLY), num(3));
 
-        assertEquals(Json.value("010101"), exp.apply(null));
+        assertTrue(Json.value("010101").matches(exp.apply(null)));
     }
 
     @Test
@@ -126,7 +127,7 @@ public final class OperatorExpressionTest {
         final Expression exp =
             exp(num(1), op(ADD), num(2), op(MULTIPLY), num(3));
 
-        assertEquals(Json.value(9), exp.apply(null));
+        assertTrue(Json.value(9).matches(exp.apply(null)));
     }
 
     private static OperatorExpression exp(final Sequence<?>... subs) {

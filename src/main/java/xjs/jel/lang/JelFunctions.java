@@ -14,8 +14,12 @@ import xjs.jel.exception.IllegalJelArgsException;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.Callable;
 import xjs.jel.expression.Expression;
+import xjs.jel.expression.LiteralExpression;
 import xjs.jel.expression.TemplateExpression;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -57,6 +61,7 @@ public final class JelFunctions {
         register("file", Privilege.IO, JelFunctions::file);
         register("keys", JelFunctions::keys);
         register("values", JelFunctions::values);
+        register("time", JelFunctions::time);
         register("type", JelFunctions::type);
         register("pretty", JelFunctions::pretty);
         register("parse", JelFunctions::parse);
@@ -118,7 +123,7 @@ public final class JelFunctions {
             final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
         requireArgs(0, 2, args);
 
-        final JsonValue source;// = args.length == 1 ? args[0] : self;
+        final JsonValue source;
         final boolean privileged;
 
         if (args.length == 0) {
@@ -149,10 +154,10 @@ public final class JelFunctions {
                 }
             }
         }
-        final List<JelMember> members = new ArrayList<>(ctx.getScope().jelMembers());
-        if (source.isObject()) {
-            members.addAll(JelReflection.jelMembers(source.asObject()));
-        }
+        final List<JelMember> members =
+            new ArrayList<>(ctx.getScope().jelMembers());
+        members.addAll(JelReflection.jelMembers(source));
+
         for (final JelMember member : members) {
             final String key = member.getKey();
             final Expression exp = member.getExpression();
@@ -490,6 +495,21 @@ public final class JelFunctions {
             }
             return ofNull();
         });
+    }
+    public static Expression time(
+            final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
+        requireArgs(0, 1, args);
+        if (args.length == 1) {
+            final JsonValue arg = args[0];
+            if (arg.isString()) {
+                return LiteralExpression.of(new JelTime(OffsetDateTime.parse(arg.asString())));
+            } else if (arg.isNumber()) {
+                return LiteralExpression.of(new JelTime(OffsetDateTime.ofInstant(
+                    Instant.ofEpochMilli(arg.asLong()), ZoneOffset.systemDefault())));
+            }
+            throw new JelException("Expected a number, string, or no args");
+        }
+        return LiteralExpression.of(new JelTime(OffsetDateTime.now()));
     }
 
     public static Expression type(

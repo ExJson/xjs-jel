@@ -70,6 +70,13 @@ public final class JelFlags {
     public static final int FROM = 1 << 8;
 
     /**
+     * Indicates that a value has just been created and should not yet
+     * get copied by reference expressions. This reduces the number of
+     * clone operations that occur in the evaluator.
+     */
+    public static final int CREATED = 1 << 29;
+
+    /**
      * Indicates that a field was generated as the result of some
      * non-literal expression.
      */

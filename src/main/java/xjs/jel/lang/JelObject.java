@@ -7,6 +7,7 @@ import xjs.core.JsonReference;
 import xjs.core.JsonValue;
 import xjs.jel.JelMember;
 import xjs.jel.expression.Callable;
+import xjs.jel.scope.CallableAccessor;
 import xjs.jel.scope.Scope;
 import xjs.serialization.util.HashIndexTable;
 
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // still investigating optimizations
-public class JelObject extends JsonObject implements JelContainer {
+public class JelObject extends JsonObject implements JelContainer, CallableAccessor {
     private final List<String> callableKeys;
     private final List<Callable> callables;
     private final transient HashIndexTable callableTable;

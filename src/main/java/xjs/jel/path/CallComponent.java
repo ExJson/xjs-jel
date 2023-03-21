@@ -5,11 +5,13 @@ import xjs.core.JsonArray;
 import xjs.core.JsonReference;
 import xjs.core.JsonValue;
 import xjs.jel.JelContext;
+import xjs.jel.lang.CallableFacade;
 import xjs.jel.lang.JelFunctions;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.Callable;
 import xjs.jel.expression.Expression;
 import xjs.jel.expression.TupleExpression;
+import xjs.jel.scope.CallableAccessor;
 import xjs.jel.scope.ReferenceAccessor;
 import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
@@ -55,7 +57,7 @@ public class CallComponent extends PathComponent {
             final JelContext ctx,
             final @Nullable ReferenceAccessor accessor,
             final JsonValue parent) throws JelException {
-        Callable callable = this.getCallable(ctx, accessor);
+        Callable callable = this.findCallable(ctx, accessor, parent);
         if (callable == null) {
             return Collections.emptyList();
         }
@@ -71,18 +73,23 @@ public class CallComponent extends PathComponent {
                 throw e.withSpan(ctx, this);
             }
         }
+        final JsonValue r;
         if (exp instanceof Callable) {
-            return Collections.emptyList();
+            r = new CallableFacade((Callable) exp);
+        } else {
+            r = exp.apply(ctx);
         }
-        final JsonValue r = exp.apply(ctx);
         return Collections.singletonList(new JsonReference(r));
     }
 
-    private @Nullable Callable getCallable(
+    private @Nullable Callable findCallable(
             final JelContext ctx,
-            final @Nullable ReferenceAccessor accessor) {
-        Callable c = accessor != null
-            ? accessor.getCallable(this.key) : null;
+            final ReferenceAccessor accessor,
+            final JsonValue parent) {
+        Callable c = null;
+        if (parent instanceof CallableAccessor) {
+            c = ((CallableAccessor) parent).getCallable(this.key);
+        }
         if (c != null) {
             return c;
         }

@@ -14,7 +14,7 @@ import xjs.serialization.token.TokenType;
 
 import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class FlagModifierTest {
 
@@ -33,7 +33,7 @@ public final class FlagModifierTest {
 
         modifier.modify(this.ctx, member);
 
-        assertEquals(JelFlags.PRIVATE, member.getFlags());
+        assertTrue(member.hasFlag(JelFlags.PRIVATE));
     }
 
     @Test
@@ -43,6 +43,6 @@ public final class FlagModifierTest {
         final Expression modified = modifier.modify(Json.value("value"));
         final JsonValue output = modified.apply(this.ctx);
 
-        assertEquals(JelFlags.PRIVATE, output.getFlags());
+        assertTrue(output.hasFlag(JelFlags.PRIVATE));
     }
 }
