@@ -21,6 +21,7 @@ import xjs.serialization.token.Tokenizer;
 import xjs.serialization.util.PositionTrackingReader;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -40,6 +41,7 @@ public class JelContext {
     private final Stack<Scope> scopeStack;
     private final Stack<JsonContainer> parentStack;
     private final Set<String> inProgress;
+    private final Map<String, Set<String>> required;
     private final Stack<File> filesInProgress;
     private final File root;
     private Sequencer sequencer;
@@ -62,6 +64,7 @@ public class JelContext {
         this.scopeStack = new Stack<>();
         this.parentStack = new Stack<>();
         this.inProgress = new HashSet<>();
+        this.required = new HashMap<>();
         this.filesInProgress = new Stack<>();
         this.root = root != null ? root : new File(System.getProperty("user.dir"));
         this.sequencer = Sequencer.JEL;
@@ -141,6 +144,7 @@ public class JelContext {
 
     public void loadAll() {
         this.loadRecursive(this.folderDepth, this.root);
+        assert this.inProgress.isEmpty() : "memory leak!";
     }
 
     private void loadRecursive(final int depth, final File dir) {
@@ -261,14 +265,18 @@ public class JelContext {
         return out.getValue();
     }
 
-    private @Nullable File resolveFile(final String path) {
+    public @Nullable File resolveFile(final String path) {
+        return this.resolveFile(path, file -> file.exists() && file.isFile());
+    }
+
+    private @Nullable File resolveFile(final String path, final FileFilter filter) {
         if (!this.filesInProgress.isEmpty()) {
             final File loading = this.filesInProgress.peek();
             File relative = new File(loading.getParent(), path);
-            if (relative.exists() && relative.isFile()) {
+            if (filter.accept(relative)) {
                 return relative;
             }
-            relative = this.fileInRoot(path);
+            relative = this.fileInRoot(path, filter);
             if (relative != null) {
                 return relative;
             }
@@ -276,21 +284,21 @@ public class JelContext {
             File parent = loading.getParentFile();
             while (rootPath.length() < parent.getAbsolutePath().length()) {
                 relative = new File(loading.getParent(), path);
-                if (relative.exists() && relative.isFile()) {
+                if (filter.accept(relative)) {
                     return relative;
                 }
                 parent = parent.getParentFile();
             }
         }
-        return this.fileInRoot(path);
+        return this.fileInRoot(path, filter);
     }
 
-    private @Nullable File fileInRoot(final String path) {
+    private @Nullable File fileInRoot(final String path, final FileFilter filter) {
         final File relative = new File(this.root, path);
         if (this.outputMap.containsKey(relative.getAbsolutePath())) {
             return relative; // added manually
         }
-        if (relative.exists() && relative.isFile()) {
+        if (filter.accept(relative)) {
             return relative;
         }
         return null;
@@ -304,7 +312,27 @@ public class JelContext {
         return null;
     }
 
-    private @Nullable Output getOrLoadFile(final File file, final int privilege) {
+    public Map<String, JsonValue> getFileMap() {
+        final Map<String, JsonValue> map = new HashMap<>();
+        this.outputMap.forEach((path, output) -> {
+            if (!output.isError()) {
+                map.put(path, output.getValue());
+            }
+        });
+        return map;
+    }
+
+    public Map<String, JelException> getErrorMap() {
+        final Map<String, JelException> map = new HashMap<>();
+        this.outputMap.forEach((path, output) -> {
+            if (output.isError()) {
+                map.put(path, output.getThrown());
+            }
+        });
+        return map;
+    }
+
+    public @Nullable Output getOrLoadFile(final File file, final int privilege) {
         final String path = file.getAbsolutePath();
         Output output = this.outputMap.get(path);
         if (output != null) {
@@ -315,10 +343,12 @@ public class JelContext {
         }
         output = this.loadFile(file);
         this.outputMap.put(path, output);
+        this.loadRequired(path);
+        assert !this.inProgress.isEmpty() || this.required.isEmpty() : "memory leak!";
         return output;
     }
 
-    public Output loadFile(final File file) {
+    private Output loadFile(final File file) {
         final String path = file.getAbsolutePath();
         // for now, jel is only parsed in xjs files.
         if (!file.getName().endsWith(".xjs")) {
@@ -364,6 +394,50 @@ public class JelContext {
             thrown = new JelException("File contains syntax errors", e);
         }
         return new Output(value, thrown, null);
+    }
+
+    public void require(final String path) throws JelException {
+        final File file = this.resolveFile(path, File::exists);
+        if (file == null) {
+            throw new JelException("File not found: " + path);
+        }
+        final String currentPath = this.scope.getFilePath();
+        final Set<String> required;
+        if (currentPath == null) {
+            required = new HashSet<>();
+            this.addRecursive(required, file);
+            for (final String inner : required) {
+                this.getOrLoadFile(new File(inner), this.privilege);
+            }
+            return;
+        }
+        required = this.required.computeIfAbsent(currentPath, p -> new HashSet<>());
+        this.addRecursive(required, file);
+    }
+
+    private void addRecursive(final Set<String> required, final File file) {
+        if (file.isFile()) {
+            required.add(file.getAbsolutePath());
+            return;
+        }
+        final File[] files = file.listFiles();
+        if (files == null) {
+            return;
+        }
+        for (final File inner : files) {
+            this.addRecursive(required, inner);
+        }
+    }
+
+    private void loadRequired(final String path) {
+        final Set<String> required = this.required.get(path);
+        if (required == null) {
+            return;
+        }
+        this.required.remove(path);
+        for (final String file : required) {
+            this.getOrLoadFile(new File(file), this.privilege);
+        }
     }
 
     public void addOutput(final File file, final JsonValue value) {

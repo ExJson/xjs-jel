@@ -185,6 +185,7 @@ public class ModifierParser extends ParserModule {
             final ContainerToken.Itr itr, final Token current) {
         switch (current.textOf(itr.getReference())) {
             case "import": return new ImportModifier(current);
+            case "require": return new RequireModifier(current);
             case "add": return new AddModifier(current);
             case "merge": return new MergeModifier(current);
             case "log": return new LogModifier(false, current);
