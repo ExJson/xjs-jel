@@ -56,16 +56,15 @@ public class ReferenceParser extends ParserModule {
     public ReferenceExpression parse(
             final ContainerToken.Itr itr,
             final boolean parseSymbol) throws JelException {
-        final Token first;
-        if (parseSymbol) {
-            first = itr.peek();
-            if (first == null || !first.isSymbol('$')) {
-                throw new JelException("expected reference expression")
-                    .withSpan(itr.getParent());
-            }
+        final Token first = itr.peek();
+        if (first == null) {
+            throw new JelException("expected reference expression")
+                .withSpan(itr.getParent());
+        } else if (first.isSymbol('$')) {
             itr.next();
-        } else {
-            first = itr.peek();
+        } else if (parseSymbol) {
+            throw new JelException("expected reference expression")
+                .withSpan(first);
         }
         final List<PathComponent> components = new ArrayList<>();
         Token previous = first;

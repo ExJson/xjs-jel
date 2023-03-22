@@ -10,6 +10,7 @@ import xjs.jel.expression.LiteralExpression;
 import xjs.jel.sequence.AliasType;
 import xjs.jel.sequence.JelType;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -71,5 +72,19 @@ public interface Modifier {
             exp = modifier.modify(exp);
         }
         return exp;
+    }
+
+    static List<Modifier> flatten(final List<Modifier> in) {
+        return flatten(new ArrayList<>(), in);
+    }
+
+    static List<Modifier> flatten(final List<Modifier> out, final List<Modifier> in) {
+        for (final Modifier modifier : in) {
+            out.add(modifier);
+            if (modifier.capturesModifiers()) {
+                flatten(out, modifier.getCaptures());
+            }
+        }
+        return out;
     }
 }

@@ -32,4 +32,9 @@ public class ArrayGeneratorModifier
     public void captureModifier(final Modifier modifier) {
         this.captures.add(modifier);
     }
+
+    @Override
+    public List<Modifier> getCaptures() {
+        return this.captures;
+    }
 }

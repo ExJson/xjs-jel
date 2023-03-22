@@ -108,7 +108,7 @@ public class KeyParser extends ParserModule {
             final @Nullable AliasType forcedType) throws JelException {
         AliasType type = AliasType.NONE;
         Modifier requiredBy = null;
-        for (final Modifier modifier : modifiers) {
+        for (final Modifier modifier : Modifier.flatten(modifiers)) {
             final AliasType expected = modifier.getAliasType();
             if (expected == AliasType.NONE) {
                 continue;
@@ -183,7 +183,7 @@ public class KeyParser extends ParserModule {
     protected void readReference(
             final JelMember.Builder builder, final ContainerToken.Itr itr,
             final int e) throws JelException {
-        final ReferenceExpression exp = this.referenceParser().parse(itr);
+        final ReferenceExpression exp = this.referenceParser().parse(itr, false);
         this.whitespaceCollector().append(builder, itr, e);
         if (itr.getIndex() != e) {
             throw new JelException("expected end of alias")

@@ -77,6 +77,11 @@ public class TemplateModifier
     }
 
     @Override
+    public List<Modifier> getCaptures() {
+        return this.captures;
+    }
+
+    @Override
     public List<Span<?>> flatten() {
         final List<Span<?>> flat = new ArrayList<>();
         for (final Token sub : this.subs) {

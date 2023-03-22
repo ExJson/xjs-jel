@@ -124,7 +124,7 @@ public final class JsonPathIntegrationTest extends AbstractIntegrationTest {
               { b: { c: [ null, 7, 8 ] } }
               { b: { c: [ null, 9, 0 ] } }
             ]
-            $a[1:3].b.c[1:2] >> set: x
+            a[1:3].b.c[1:2] >> set: x
             """);
         this.outputTrimmed("""
             a: [

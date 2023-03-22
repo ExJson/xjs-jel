@@ -87,7 +87,7 @@ public final class TemplateExpressionIntegrationTest extends AbstractIntegration
               name >> private: John
               name >> (): $name
               set_name >> (v): {
-                $name >> set: $v
+                name >> set: $v
               }
             }
             first: $person.name()

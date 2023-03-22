@@ -261,7 +261,7 @@ public class JelMember
         if (modifier.capturesModifiers()) {
             for (final Modifier captured : modifier.getCaptures()) {
                 spans.add((Span<?>) captured);
-                this.appendCaptures(spans, modifier);
+                this.appendCaptures(spans, captured);
             }
         }
     }

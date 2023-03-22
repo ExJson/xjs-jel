@@ -4,6 +4,7 @@ import xjs.core.JsonArray;
 import xjs.core.JsonCopy;
 import xjs.core.JsonValue;
 import xjs.jel.JelContext;
+import xjs.jel.JelFlags;
 import xjs.jel.JelMember;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.Expression;
@@ -31,7 +32,7 @@ public class ImportModifier
             return Collections.singletonList(member);
         }
         final JsonValue rhs = member.getExpression().apply(ctx);
-        final JsonValue imports = this.getImportValues(ctx, rhs);
+        final JsonValue imports = this.getImportValues(ctx, rhs, member.hasFlag(JelFlags.VAR));
         if (member.getAlias() != null) {
             member.setExpression(LiteralExpression.of(imports));
             return Collections.singletonList(member);
@@ -52,29 +53,32 @@ public class ImportModifier
 
     @Override
     public Expression modify(final Expression expression) {
-        return ctx -> this.getImportValues(ctx, expression.apply(ctx));
+        return ctx -> this.getImportValues(ctx, expression.apply(ctx), false);
     }
 
     private JsonValue getImportValues(
-            final JelContext ctx, final JsonValue rhs) throws JelException {
+            final JelContext ctx, final JsonValue rhs, final boolean isVar) throws JelException {
         if (rhs.isPrimitive()) {
-            return this.tryGetImport(ctx, rhs.intoString());
+            return this.tryGetImport(ctx, rhs.intoString(), isVar);
         }
         final JsonArray imports = new JsonArray();
         for (final JsonValue file : rhs.intoArray()) {
-            imports.add(this.tryGetImport(ctx, file.intoString()));
+            imports.add(this.tryGetImport(ctx, file.intoString(), isVar));
         }
         return imports;
     }
 
     private JsonValue tryGetImport(
-            final JelContext ctx, final String path) throws JelException {
+            final JelContext ctx, final String path, final boolean isVar) throws JelException {
         if (ctx.isLoading(path)) {
             throw new JelException("Illegal cyclical reference")
                 .withSpan(ctx, this)
                 .withDetails("Hint: this file is also being loaded by " + path);
         }
         try {
+            if (isVar) {
+                return ctx.getImport(path);
+            }
             return ctx.getImport(path)
                 .copy(JsonCopy.RECURSIVE | JsonCopy.FORMATTING);
         } catch (final JelException e) {
