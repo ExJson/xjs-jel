@@ -11,6 +11,7 @@ public class CallableFacade extends JsonValue implements Callable {
     private final Callable wrapped;
 
     public CallableFacade(final Callable wrapped) {
+        assert !(wrapped instanceof CallableFacade) : "double wrapping";
         this.wrapped = wrapped;
     }
 

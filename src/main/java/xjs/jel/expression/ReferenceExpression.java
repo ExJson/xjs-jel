@@ -32,24 +32,18 @@ public class ReferenceExpression
 
     @Override
     public JsonValue apply(final JelContext ctx) throws JelException {
-        final JsonValue value = this.get(ctx);
-        if (value.hasFlag(JelFlags.CREATED)) {
-            value.removeFlag(JelFlags.CREATED);
-            return value;
+        JsonValue value = this.get(ctx);
+        if (!value.hasFlag(JelFlags.CREATED)) {
+            value = value.copy(JsonCopy.RECURSIVE | JsonCopy.FORMATTING);
         }
-        return this.copy(value);
+        return value.setLinesAbove(-1)
+            .setLinesBetween(-1)
+            .setFlags(JelFlags.NULL);
     }
 
     @Override
     public String applyAsString(final JelContext ctx) throws JelException {
         return this.get(ctx).intoString();
-    }
-
-    private JsonValue copy(final JsonValue value) {
-        return value.copy(JsonCopy.RECURSIVE | JsonCopy.FORMATTING)
-            .setLinesAbove(-1)
-            .setLinesBetween(-1)
-            .setFlags(JelFlags.NULL);
     }
 
     @Override

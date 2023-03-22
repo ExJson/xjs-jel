@@ -341,9 +341,12 @@ public final class JelFunctions {
             final JsonValue self, final JelContext ctx, final JsonValue... args) throws JelException {
         requireArgs(1, 1, args);
         if (self.isArray()) {
+            if (!args[0].isNumber()) {
+                throw new JelException("array.remove accepts a number only");
+            }
             self.asArray().remove(args[0].asInt());
         } else if (self.isObject()) {
-            self.asObject().remove(args[0].asString());
+            self.asObject().remove(args[0].intoString());
         }
         return of(self);
     }
@@ -501,11 +504,11 @@ public final class JelFunctions {
         requireArgs(0, 1, args);
         if (args.length == 1) {
             final JsonValue arg = args[0];
-            if (arg.isString()) {
-                return LiteralExpression.of(new JelTime(OffsetDateTime.parse(arg.asString())));
-            } else if (arg.isNumber()) {
+            if (arg.isNumber()) {
                 return LiteralExpression.of(new JelTime(OffsetDateTime.ofInstant(
                     Instant.ofEpochMilli(arg.asLong()), ZoneOffset.systemDefault())));
+            } else if (arg.isString()) {
+                return LiteralExpression.of(new JelTime(OffsetDateTime.parse(arg.asString())));
             }
             throw new JelException("Expected a number, string, or no args");
         }

@@ -56,6 +56,11 @@ public class JelTime extends JsonNumber implements CallableAccessor {
     }
 
     @Override
+    public String intoString() {
+        return this.time.toString();
+    }
+
+    @Override
     public String toString() {
         return this.time.toString();
     }
