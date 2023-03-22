@@ -47,6 +47,10 @@ public interface Modifier {
 
     default void captureModifier(final Modifier modifier) {}
 
+    default List<Modifier> getCaptures() {
+        return Collections.emptyList();
+    }
+
     default boolean canBeCaptured(final Modifier by) {
         return !this.changesValueType();
     }

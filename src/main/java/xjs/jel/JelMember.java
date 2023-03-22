@@ -249,8 +249,21 @@ public class JelMember
             } else {
                 flat.add(sub);
             }
+            if (sub instanceof Modifier) {
+                this.appendCaptures(flat, (Modifier) sub);
+            }
         }
         return flat;
+    }
+
+    private void appendCaptures(
+            final List<Span<?>> spans, final Modifier modifier) {
+        if (modifier.capturesModifiers()) {
+            for (final Modifier captured : modifier.getCaptures()) {
+                spans.add((Span<?>) captured);
+                this.appendCaptures(spans, modifier);
+            }
+        }
     }
 
     public boolean isTemplate() {
