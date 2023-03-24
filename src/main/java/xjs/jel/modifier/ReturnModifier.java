@@ -3,7 +3,7 @@ package xjs.jel.modifier;
 import xjs.jel.JelContext;
 import xjs.jel.JelMember;
 import xjs.jel.exception.JelException;
-import xjs.jel.exception.YieldException;
+import xjs.jel.exception.ReturnException;
 import xjs.jel.expression.Expression;
 import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
@@ -12,10 +12,10 @@ import xjs.serialization.token.Token;
 import java.util.Collections;
 import java.util.List;
 
-public class YieldModifier
+public class ReturnModifier
         extends Sequence.Primitive implements Modifier {
 
-    public YieldModifier(final Token token) {
+    public ReturnModifier(final Token token) {
         super(JelType.FLAG, buildList(token));
     }
 
@@ -25,7 +25,7 @@ public class YieldModifier
         if (!member.isModified()) {
             final Expression exp = member.getExpression();
             member.setExpression(givenCtx -> {
-                throw new YieldException(this, exp.apply(givenCtx));
+                throw new ReturnException(this, exp.apply(givenCtx));
             });
         }
         return Collections.singletonList(member);
@@ -34,11 +34,11 @@ public class YieldModifier
     @Override
     public Expression modify(Expression expression) {
         return ctx -> {
-            throw new JelException("Illegal yield modifier")
+            throw new JelException("Illegal return modifier")
                 .withSpan(ctx, this)
                 .withDetails(
-                    "Hint: Cannot yield from an aliased value."
-                    + "Hint: cannot capture or inline yield modifier.");
+                    "Hint: Cannot return from an aliased value."
+                    + "Hint: cannot capture or inline return modifier.");
         };
     }
 }

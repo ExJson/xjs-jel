@@ -52,7 +52,7 @@ public final class ObjectExpressionTest {
             new SymbolToken(0, 0, 0, 0, TokenType.BREAK, '\n'));
         final ObjectExpression exp = exp(members);
 
-        assertEquals(2, exp.apply(this.ctx).getLinesTrailing());
+        assertEquals(2, exp.apply(this.ctx).asObject().getLinesTrailing());
     }
 
     @Test
@@ -65,7 +65,7 @@ public final class ObjectExpressionTest {
             new CommentToken(0, 0, 0, 0, CommentStyle.HASH, "b"));
 
         final ObjectExpression exp = exp(members);
-        final JsonObject object = exp.apply(this.ctx);
+        final JsonObject object = exp.apply(this.ctx).asObject();
         final CommentData comments = object.getComments().getData(CommentType.INTERIOR);
 
         final CommentData expected = new CommentData();

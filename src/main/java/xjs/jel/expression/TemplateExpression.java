@@ -7,7 +7,7 @@ import xjs.core.JsonValue;
 import xjs.jel.JelContext;
 import xjs.jel.exception.IllegalJelArgsException;
 import xjs.jel.exception.JelException;
-import xjs.jel.exception.YieldedValueException;
+import xjs.jel.exception.ReturnException;
 import xjs.jel.lang.CallableFacade;
 import xjs.jel.modifier.Modifier;
 import xjs.jel.scope.Scope;
@@ -55,12 +55,12 @@ public class TemplateExpression
             } else {
                 return LiteralExpression.of(exp.apply(ctx));
             }
-        } catch (final YieldedValueException e) {
-            final JsonValue yielded = e.getValue();
-            if (yielded instanceof CallableFacade) {
-                return ((CallableFacade) yielded).getWrapped();
+        } catch (final ReturnException e) {
+            final JsonValue returned = e.getValue();
+            if (returned instanceof CallableFacade) {
+                return ((CallableFacade) returned).getWrapped();
             }
-            return LiteralExpression.of(yielded);
+            return LiteralExpression.of(returned);
         } finally {
             ctx.dropScope();
             scope.dropFrame();

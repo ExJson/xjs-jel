@@ -3,9 +3,11 @@ package xjs.jel.expression;
 import xjs.comments.Comment;
 import xjs.comments.CommentType;
 import xjs.core.JsonContainer;
+import xjs.core.JsonValue;
 import xjs.jel.JelContext;
 import xjs.jel.JelMember;
 import xjs.jel.exception.JelException;
+import xjs.jel.exception.YieldException;
 import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
 import xjs.serialization.Span;
@@ -25,12 +27,14 @@ public abstract class ContainerExpression<C extends JsonContainer>
     }
 
     @Override
-    public C apply(final JelContext ctx) throws JelException {
+    public JsonValue apply(final JelContext ctx) throws JelException {
         final C out = this.newContainer();
         ctx.pushParent(out);
         ctx.getScope().pushFrame();
         try {
             return this.buildContainer(out, ctx);
+        } catch (final YieldException e) {
+            return e.getValue();
         } finally {
             ctx.dropParent();
             ctx.getScope().dropFrame();

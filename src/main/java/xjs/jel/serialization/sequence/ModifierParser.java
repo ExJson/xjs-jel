@@ -196,6 +196,7 @@ public class ModifierParser extends ParserModule {
             case "noinline": return new NoInlineModifier(current);
             case "raise": return new RaiseModifier(current);
             case "yield": return new YieldModifier(current);
+            case "return": return new ReturnModifier(current);
             default: return null;
         }
     }

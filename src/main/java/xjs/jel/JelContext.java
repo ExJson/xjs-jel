@@ -8,7 +8,8 @@ import xjs.core.JsonReference;
 import xjs.core.JsonValue;
 import xjs.exception.SyntaxException;
 import xjs.jel.exception.JelException;
-import xjs.jel.exception.YieldedValueException;
+import xjs.jel.exception.JumpException;
+import xjs.jel.exception.ReturnException;
 import xjs.jel.expression.Expression;
 import xjs.jel.scope.Scope;
 import xjs.jel.sequence.Sequence;
@@ -230,13 +231,28 @@ public class JelContext {
 
     public JsonValue eval(
             final @Nullable String path, final Sequence<?> sequence) throws JelException {
+        final JsonValue out = this.evalInternal(path, sequence);
+        if (out.isObject() && out.asObject().size() > 0) {
+            final JsonValue first = out.asObject().getReference(0).getOnly();
+            final int givenLines = first.getLinesAbove();
+            if (givenLines > 0) {
+                first.setLinesAbove(givenLines - 1);
+            }
+        }
+        return out;
+    }
+
+    private JsonValue evalInternal(
+            final @Nullable String path, final Sequence<?> sequence) throws JelException {
         if (sequence instanceof Expression) {
             final int stackSize = this.scopeStack.size();
             this.pushScope(this.globalScope.captureWithPath(path));
             try {
                 return ((Expression) sequence).apply(this);
-            } catch (final YieldedValueException e) {
+            } catch (final ReturnException e) {
                 return e.getValue();
+            } catch (final JumpException e) {
+                throw new JelException("Illegal jump statement").withSpan(e.getSpan());
             } finally {
                 this.dropScope();
                 assert this.scopeStack.size() == stackSize : "memory leak!";

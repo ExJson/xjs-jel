@@ -52,7 +52,7 @@ public final class ArrayExpressionTest {
             new SymbolToken(0, 0, 0, 0, TokenType.BREAK, '\n'));
         final ArrayExpression exp = exp(members);
 
-        assertEquals(2, exp.apply(this.ctx).getLinesTrailing());
+        assertEquals(2, exp.apply(this.ctx).asArray().getLinesTrailing());
     }
 
     @Test
@@ -65,7 +65,7 @@ public final class ArrayExpressionTest {
             new CommentToken(0, 0, 0, 0, CommentStyle.HASH, "b"));
 
         final ArrayExpression exp = exp(members);
-        final JsonArray array = exp.apply(this.ctx);
+        final JsonArray array = exp.apply(this.ctx).asArray();
         final CommentData comments = array.getComments().getData(CommentType.INTERIOR);
 
         final CommentData expected = new CommentData();
