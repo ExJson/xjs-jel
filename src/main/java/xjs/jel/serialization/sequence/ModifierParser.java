@@ -182,7 +182,7 @@ public class ModifierParser extends ParserModule {
     }
 
     protected @Nullable Modifier readFlag(
-            final ContainerToken.Itr itr, final Token current) {
+            final ContainerToken.Itr itr, final Token current) throws JelException {
         switch (current.textOf(itr.getReference())) {
             case "import": return new ImportModifier(current);
             case "require": return new RequireModifier(current);
@@ -197,6 +197,10 @@ public class ModifierParser extends ParserModule {
             case "raise": return new RaiseModifier(current);
             case "yield": return new YieldModifier(current);
             case "return": return new ReturnModifier(current);
+            case "catch":
+                throw new JelException("Unimplemented modifier")
+                    .withSpan(current)
+                    .withDetails("Implementation is in design. ETA release 2");
             default: return null;
         }
     }
