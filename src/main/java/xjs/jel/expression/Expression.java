@@ -29,8 +29,4 @@ public interface Expression {
     default @Nullable JsonType getStrongType() {
         return null;
     }
-
-    default boolean isInlined() {
-        return false;
-    }
 }

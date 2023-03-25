@@ -45,9 +45,4 @@ public class ReferenceExpression
     public String applyAsString(final JelContext ctx) throws JelException {
         return this.get(ctx).intoString();
     }
-
-    @Override
-    public final boolean isInlined() {
-        return true;
-    }
 }

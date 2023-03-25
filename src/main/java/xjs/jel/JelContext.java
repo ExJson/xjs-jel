@@ -235,7 +235,7 @@ public class JelContext {
         if (out.isObject() && out.asObject().size() > 0) {
             final JsonValue first = out.asObject().getReference(0).getOnly();
             final int givenLines = first.getLinesAbove();
-            if (givenLines > 0) {
+            if (givenLines > 1) { // ideally, would only do this for open objects
                 first.setLinesAbove(givenLines - 1);
             }
         }

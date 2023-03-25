@@ -50,7 +50,15 @@ public class KeyParser extends ParserModule {
         itr.skipTo(s);
         this.readAlias(builder, itr, type, aliasIdx, keyIdx);
 
-        if (builder.alias() != null) {
+        if (builder.alias() == null) {
+            for (final Modifier modifier : modifiers) {
+                if (modifier.requiresAlias()) {
+                    throw new JelException("Missing alias")
+                        .withSpan((Span<?>) modifier)
+                        .withDetails("Hint: this modifier requires an alias");
+                }
+            }
+        } else {
             for (final Modifier modifier : modifiers) {
                 modifier.captureAlias(builder.alias());
             }
@@ -133,6 +141,9 @@ public class KeyParser extends ParserModule {
     protected void readAlias(
             final JelMember.Builder builder, final ContainerToken.Itr itr,
             final AliasType type, final int aliasIdx, final int keyIdx) throws JelException {
+        if (itr.getIndex() == aliasIdx && type != AliasType.NONE) {
+            return; // alias = null
+        }
         switch (type) {
             case DESTRUCTURE:
                 this.readDestructure(builder, itr, aliasIdx);
