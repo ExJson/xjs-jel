@@ -30,6 +30,11 @@ public class DelegateModifier
             Callable c = this.ref.getCallable(ctx, ctx.getScope(), ctx.peekParent());
             if (c == null) {
                 final String key = this.getKey();
+                if (key == null) {
+                    throw new JelException("Callable not in scope")
+                        .withSpan(ctx, this.subs.get(0))
+                        .withDetails("Callable not returned by JSON path");
+                }
                 throw new JelException("Callable not in scope: " + key)
                     .withSpan(ctx, this.subs.get(0))
                     .withDetails("Expected a template or function named '" + key + "'");

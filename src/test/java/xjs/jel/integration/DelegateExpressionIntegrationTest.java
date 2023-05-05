@@ -55,4 +55,36 @@ public final class DelegateExpressionIntegrationTest extends AbstractIntegration
             ]
             """);
     }
+
+    @Test
+    public void delegate_mayBeReturnedBy_anyReference() {
+        this.inputSuccess("""
+            t >> (a) (b): {
+              a: $a
+              b: $b
+            }
+            r >> @t(1): 2
+            """);
+        this.outputTrimmed("""
+            r: {
+              a: 1
+              b: 2
+            }
+            """);
+    }
+
+    @Test
+    public void delegate_whenReferenceDoesNotReturnCallable_throwsSpecificException() {
+        this.inputFailure("""
+            a: [ 0 ]
+            r >> @a[0]: xyz
+            """);
+        this.outputExactly("""
+            JelException: Callable not in scope
+            ---------------------------------------------------
+                2 | r >> @a[0]: xyz
+                          ^^^^
+            ---------------------------------------------------
+            Callable not returned by JSON path""");
+    }
 }

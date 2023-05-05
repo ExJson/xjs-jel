@@ -9,6 +9,7 @@ import xjs.core.JsonValue;
 import xjs.jel.JelContext;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.Callable;
+import xjs.jel.lang.CallableFacade;
 import xjs.jel.scope.ContainerAccessor;
 import xjs.jel.scope.ReferenceAccessor;
 import xjs.jel.sequence.JelType;
@@ -112,6 +113,10 @@ public class JsonPath extends Sequence<PathComponent> {
         }
         final PathComponent last = this.subs.get(this.subs.size() - 1);
         if (!(last instanceof KeyComponent)) {
+            final JsonValue ret = this.get(ctx, accessor, parent);
+            if (ret instanceof CallableFacade) {
+                return ((CallableFacade) ret).getWrapped();
+            }
             return null;
         }
         JsonReference ref = null;
