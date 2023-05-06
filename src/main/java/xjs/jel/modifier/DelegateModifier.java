@@ -6,11 +6,15 @@ import xjs.jel.expression.ReferenceExpression;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.Callable;
 import xjs.jel.expression.Expression;
+import xjs.jel.path.CallComponent;
 import xjs.jel.path.KeyComponent;
+import xjs.jel.path.PathComponent;
 import xjs.jel.sequence.JelType;
 import xjs.jel.sequence.Sequence;
 import xjs.serialization.Span;
+import xjs.serialization.token.Token;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -71,6 +75,38 @@ public class DelegateModifier
 
     @Override
     public List<Span<?>> flatten() {
-        return Collections.singletonList(this);
+        final List<Span<?>> flat = new ArrayList<>();
+        final Sequence<PathComponent>.Itr itr = this.ref.iterator();
+        while (itr.hasNext()) {
+            final PathComponent component = itr.next();
+            if (itr.index() == this.ref.size() - 1) {
+                if (this.addAsDelegate(flat, component)) {
+                    break;
+                }
+            }
+            flat.addAll(component.flatten());
+        }
+        return flat;
+    }
+
+    protected boolean addAsDelegate(final List<Span<?>> flat, final PathComponent component) {
+        if (component.type() == JelType.KEY) {
+            flat.add(delegateSpan(component.spans().get(0)));
+            return true;
+        } else if (component instanceof CallComponent) {
+            for (final Span<?> sub : component.flatten()) {
+                if (sub.type() == JelType.CALL && sub instanceof Sequence.Primitive) {
+                    flat.add(delegateSpan(((Sequence<?>) sub).spans().get(0)));
+                } else {
+                    flat.add(sub);
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    protected static Span<?> delegateSpan(final Span<?> s) {
+        return new Sequence.Primitive(JelType.DELEGATE, Collections.singletonList((Token) s));
     }
 }

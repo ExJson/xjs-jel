@@ -39,7 +39,8 @@ public class ModifierParser extends ParserModule {
                 throw new JelException("Unknown modifier").withSpan(peek);
             }
             boolean anyCaptured = false;
-            for (final Modifier captor : capturing) {
+            for (int i = capturing.size() - 1; i >= 0; i--) {
+                final Modifier captor = capturing.get(i);
                 if (modifier.canBeCaptured(captor)) {
                     captor.captureModifier(modifier);
                     anyCaptured = true;

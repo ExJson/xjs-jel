@@ -124,4 +124,22 @@ public final class TemplateExpressionIntegrationTest extends AbstractIntegration
             f: value
             """);
     }
+
+    @Test
+    public void nestedTemplate_appliesScope_toNestedModifiers() {
+        this.inputSuccess("""
+            t >> (v) (o) $o: {
+              v: $v
+            }
+            r: $t(1)({
+              k: v
+            })
+            """);
+        this.outputTrimmed("""
+            r: {
+              v: 1
+              k: v
+            }
+            """);
+    }
 }
