@@ -87,4 +87,33 @@ public final class DelegateExpressionIntegrationTest extends AbstractIntegration
             ---------------------------------------------------
             Callable not returned by JSON path""");
     }
+
+    @Test
+    public void nestedCall_isResolvedByDelegate() {
+        this.inputSuccess("""                            
+            typed >> (type) (cfg) if: {
+              $cfg.isObject() >> $cfg: {
+                type: $type
+              }
+              _: {
+                type: $type
+                value: $cfg
+              }
+            }
+                        
+            vanilla >> (type) (cfg): {
+              vanilla >> @typed($type): $cfg
+            }
+                        
+            x: $vanilla(absolute)(1234)
+            """);
+        this.outputTrimmed("""
+            x: {
+              vanilla: {
+                type: absolute
+                value: 1234
+              }
+            }
+            """);
+    }
 }

@@ -86,12 +86,18 @@ public class CallComponent extends PathComponent {
             final JelContext ctx,
             final ReferenceAccessor accessor,
             final JsonValue parent) {
-        Callable c = null;
+        Callable c;
         if (parent instanceof CallableAccessor) {
             c = ((CallableAccessor) parent).getCallable(this.key);
+            if (c != null) {
+                return c;
+            }
         }
-        if (c != null) {
-            return c;
+        if (accessor != null) {
+            c = accessor.getCallable(this.key);
+            if (c != null) {
+                return c;
+            }
         }
         if (accessor != ctx.getScope()) {
             c = ctx.getScope().getCallable(this.key);
