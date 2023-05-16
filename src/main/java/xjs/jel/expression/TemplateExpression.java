@@ -53,7 +53,11 @@ public class TemplateExpression
                 }
                 return c;
             } else {
-                return LiteralExpression.of(exp.apply(ctx));
+                final JsonValue v = exp.apply(ctx);
+                if (v instanceof CallableFacade) {
+                    return ((CallableFacade) v).getWrapped();
+                }
+                return LiteralExpression.of(v);
             }
         } catch (final ReturnException e) {
             final JsonValue returned = e.getValue();

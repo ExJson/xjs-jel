@@ -57,6 +57,19 @@ public final class JumpIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void yield_returnsTemplate_withCapturedScope() {
+        this.inputSuccess("""
+            concat >> (a): {
+              >> yield (b): $a$b
+            }
+            r: $concat(123)(456)
+            """);
+        this.outputTrimmed("""
+            r: 123456
+            """);
+    }
+
+    @Test
     public void return_yieldsValue_fromTemplateExpression() {
         this.inputSuccess("""
             t >> (): {
@@ -102,6 +115,19 @@ public final class JumpIntegrationTest extends AbstractIntegrationTest {
               b: 2
               a: 1
             }
+            """);
+    }
+
+    @Test
+    public void return_returnsTemplate_withCapturedScope() {
+        this.inputSuccess("""
+            concat >> (a): {
+              >> return (b): $a$b
+            }
+            r: $concat(123)(456)
+            """);
+        this.outputTrimmed("""
+            r: 123456
             """);
     }
 }
