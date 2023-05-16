@@ -228,13 +228,12 @@ public class JelMember
 
     @Override
     public List<Span<?>> flatten() {
-        if (!this.isTemplate()) {
-            return super.flatten();
-        }
         final List<Span<?>> flat = new ArrayList<>();
+        final boolean template = this.isTemplate();
         for (final Span<?> sub : this.subs) {
-            if (sub instanceof Alias &&
-                    ((Alias) sub).aliasType() == AliasType.LITERAL) {
+            if (template &&
+                    sub instanceof Alias
+                    && ((Alias) sub).aliasType() == AliasType.LITERAL) {
                 flat.add(new Sequence.Parent(
                     JelType.CALL, Collections.singletonList((Alias) sub)));
             } else if (sub instanceof Sequence) {
