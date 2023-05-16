@@ -142,4 +142,17 @@ public final class TemplateExpressionIntegrationTest extends AbstractIntegration
             }
             """);
     }
+
+    @Test
+    public void template_mayReturnAnotherTemplate_viaReturnStatement() {
+        this.inputSuccess("""
+            t >> (a): {
+              >> return (b): $a $b
+            }
+            o: $t(1)(2)
+            """);
+        this.outputTrimmed("""
+            o: 1 2
+            """);
+    }
 }

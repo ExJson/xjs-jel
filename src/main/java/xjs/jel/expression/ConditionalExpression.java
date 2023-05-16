@@ -37,11 +37,6 @@ public class ConditionalExpression
                 if (processed.isEmpty()) {
                     return JsonLiteral.jsonNull();
                 } else if (processed.size() == 1) {
-                    if (processed.get(0) instanceof Callable) {
-                        throw new JelException("Cannot return template from conditional expression")
-                            .withSpan(ctx, this)
-                            .withDetails("No way to capture expression as value");
-                    }
                     return processed.get(0).getValue(ctx);
                 }
                 throw new JelException("Unsure how to handle multi-member output in conditional--unreachable?")

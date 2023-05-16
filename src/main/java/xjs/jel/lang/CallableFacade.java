@@ -21,6 +21,11 @@ public class CallableFacade extends JsonValue implements Callable {
         return this.wrapped.call(self, ctx, args);
     }
 
+    @Override
+    public JsonValue apply(final JelContext ctx) throws JelException {
+        return this;
+    }
+
     public Callable getWrapped() {
         return this.wrapped;
     }

@@ -5,7 +5,6 @@ import xjs.core.JsonArray;
 import xjs.core.JsonReference;
 import xjs.core.JsonValue;
 import xjs.jel.JelContext;
-import xjs.jel.lang.CallableFacade;
 import xjs.jel.lang.JelFunctions;
 import xjs.jel.exception.JelException;
 import xjs.jel.expression.Callable;
@@ -73,13 +72,7 @@ public class CallComponent extends PathComponent {
                 throw e.withSpan(ctx, this);
             }
         }
-        final JsonValue r;
-        if (exp instanceof Callable) {
-            r = new CallableFacade((Callable) exp);
-        } else {
-            r = exp.apply(ctx);
-        }
-        return Collections.singletonList(new JsonReference(r));
+        return Collections.singletonList(new JsonReference(exp.apply(ctx)));
     }
 
     private @Nullable Callable findCallable(

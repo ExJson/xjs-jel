@@ -3,6 +3,7 @@ package xjs.jel.expression;
 import xjs.core.JsonValue;
 import xjs.jel.JelContext;
 import xjs.jel.exception.JelException;
+import xjs.jel.lang.CallableFacade;
 import xjs.jel.scope.Scope;
 import xjs.serialization.Span;
 
@@ -15,11 +16,7 @@ public interface Callable extends Expression {
 
     @Override
     default JsonValue apply(final JelContext ctx) throws JelException {
-        JelException e = new JelException("check instanceof Callable");
-        if (this instanceof Span<?>) {
-            e = e.withSpan((Span<?>) this);
-        }
-        throw e;
+        return new CallableFacade(this);
     }
 
     default boolean capturesScope() {

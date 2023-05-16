@@ -36,6 +36,27 @@ public final class JumpIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void yield_capturesModifiers() {
+        // can be written with less code. just a test
+        this.inputSuccess("""
+            t >> (o): {
+              >> yield $o: {
+                b: 2
+              }
+            }
+            o: $t({
+              a: 1
+            })
+            """);
+        this.outputTrimmed("""
+            o: {
+              b: 2
+              a: 1
+            }
+            """);
+    }
+
+    @Test
     public void return_yieldsValue_fromTemplateExpression() {
         this.inputSuccess("""
             t >> (): {
@@ -61,5 +82,26 @@ public final class JumpIntegrationTest extends AbstractIntegrationTest {
             }
             """);
         this.outputExactly("6");
+    }
+
+    @Test
+    public void return_capturesModifiers() {
+        // can be written with less code. just a test
+        this.inputSuccess("""
+            t >> (o): {
+              >> return $o: {
+                b: 2
+              }
+            }
+            o: $t({
+              a: 1
+            })
+            """);
+        this.outputTrimmed("""
+            o: {
+              b: 2
+              a: 1
+            }
+            """);
     }
 }

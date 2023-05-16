@@ -113,4 +113,39 @@ public final class ConditionalExpressionIntegrationTest extends AbstractIntegrat
             c: value
             """);
     }
+
+    @Test
+    public void conditionalExpression_appliesModifiers() {
+        this.inputSuccess("""
+            a >> private: {
+              x: 1
+            }
+            b >> if: {
+              false: null
+              _ >> $a: {
+                y: 2
+              }
+            }
+            """);
+        this.outputTrimmed("""
+            b: {
+              y: 2
+              x: 1
+            }
+            """);
+    }
+
+    @Test
+    public void conditionalExpression_returnsTemplateExpressions() {
+        this.inputSuccess("""
+            a >> if: {
+              false: null
+              _ >> (): success!
+            }
+            b: $a()
+            """);
+        this.outputTrimmed("""
+            b: success!
+            """);
+    }
 }

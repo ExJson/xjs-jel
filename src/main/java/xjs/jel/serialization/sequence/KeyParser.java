@@ -126,8 +126,8 @@ public class KeyParser extends ParserModule {
                     .withSpan((Span<?>) requiredBy)
                     .withSpan((Span<?>) modifier)
                     .withDetails("incompatible alias types expected: " + type + ", " + expected);
-            } else if (forcedType != null) {
-                throw new JelException("illegal modifier sequence")
+            } else if (type != AliasType.NONE && forcedType != null) {
+                throw new JelException("illegal modifier sequence (" + type + ")")
                     .withSpan((Span<?>) modifier)
                     .withDetails("A parent value is expecting an alias of type " + forcedType);
             } else {

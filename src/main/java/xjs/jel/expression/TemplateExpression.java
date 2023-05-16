@@ -99,4 +99,12 @@ public class TemplateExpression
     public boolean hasCapture() {
         return this.capture != null;
     }
+
+    @Override
+    public JsonValue apply(final JelContext ctx) throws JelException {
+        if (!this.hasCapture()) {
+            this.setCapture(ctx.getScope().capture());
+        }
+        return new CallableFacade(this);
+    }
 }

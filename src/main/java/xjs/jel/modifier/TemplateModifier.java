@@ -73,7 +73,9 @@ public class TemplateModifier
 
     @Override
     public boolean canBeCaptured(final Modifier by) {
-        return by instanceof TemplateModifier;
+        return by instanceof TemplateModifier
+            || by instanceof YieldModifier
+            || by instanceof ReturnModifier;
     }
 
     @Override

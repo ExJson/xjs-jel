@@ -110,4 +110,41 @@ public final class MatchExpressionIntegrationTest extends AbstractIntegrationTes
             out: happiness
             """);
     }
+
+    @Test
+    public void conditionalExpression_appliesModifiers() {
+        this.inputSuccess("""
+            a >> private: red
+            b >> private: {
+              x: 1
+            }
+            c >> match $a: {
+              red >> $b: {
+                y: 2
+              }
+              _: null
+            }
+            """);
+        this.outputTrimmed("""
+            c: {
+              y: 2
+              x: 1
+            }
+            """);
+    }
+
+    @Test
+    public void conditionalExpression_returnsTemplateExpressions() {
+        this.inputSuccess("""
+            a >> private: red
+            b >> if: {
+              red >> (): success!
+              _: null
+            }
+            c: $b()
+            """);
+        this.outputTrimmed("""
+            c: success!
+            """);
+    }
 }
